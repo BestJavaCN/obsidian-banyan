@@ -1,6 +1,17 @@
 ### Changelog
 
-#### 1.3.3 Changelog
+#### 1.3.4 
+
+Improvements
+
+- Added the banyan_config directory and moved the editor placeholder file here.
+- Improved the description of the notes directory in the settings.
+
+Fix
+
+- Fixed the issue where notes added by the clipper plugin had no ID, which previously caused new notes to be improperly managed by this plugin.
+
+#### 1.3.3
 ​​
 Improvements​​
 

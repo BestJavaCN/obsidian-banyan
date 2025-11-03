@@ -43,6 +43,9 @@ You can even use random browsing to meet your past selves from different periods
 ## How to Use
 
 ### Note Panel - Browse Card Notes
+- You can setup a directory for the pulguin. The plugin only manages notes in this directory.
+- The structure of notes and subdirectories in this directory is not important.
+- Migrated notes to this directory will be managed by this plugin.
 - Click the icon in the left sidebar, or use `Ctrl/Cmd + P` command to open the note panel
 
 ### Add New Notes
