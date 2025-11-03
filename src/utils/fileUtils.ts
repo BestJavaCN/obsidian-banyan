@@ -6,7 +6,9 @@ import { i18n } from "./i18n";
 import moment from "moment";
 import { legalFileName } from "./utils";
 
-const PlaceholderFileName = "banyan_editor_placeholder.md";
+const PlaceholderFileName = "editor_placeholder.md";
+const PlaceholderDirectory = "banyan_config";
+const PlaceholderFilePath = `${PlaceholderDirectory}/${PlaceholderFileName}`;
 
 export class FileUtils {
 
@@ -24,7 +26,7 @@ export class FileUtils {
   //#region 文件获取
 
   isLegalFile(file: TFile) {
-    const path = this.getPlaceholderFilePath();
+    const path = this.getFullPlaceholderFilePath();
     // 根目录的情况
     if (this.dir === "/") {
       return file.path !== path;
@@ -50,15 +52,15 @@ export class FileUtils {
     return files;
   }
 
-  getPlaceholderFilePath() {
-    return normalizePath(`${this.dir}/${PlaceholderFileName}`);
+  getFullPlaceholderFilePath() {
+    return normalizePath(`${this.dir}/${PlaceholderFilePath}`);
   }
 
   async getPlaceholderFile() {
-    const path = this.getPlaceholderFilePath();
+    const path = this.getFullPlaceholderFilePath();
     const file = this.app.vault.getFileByPath(path);
     if (file) return file;
-    await this.ensureDirectoryExists(this.dir);
+    await this.ensureDirectoryExists(`${this.dir}/${PlaceholderDirectory}`);
     const exists1 = await this.app.vault.adapter.exists(path);
     console.log('占位文件', exists1, "创建", path);
     try {
@@ -69,7 +71,7 @@ export class FileUtils {
     } catch (e) {
       console.error('创建占位文件失败', e);
       throw e;
-    }    
+    }
   }
 
   public getZkPrefixerFormat(): string | undefined {

@@ -35,7 +35,7 @@ export interface BanyanPluginSettings {
 	viewSchemesExpanded: boolean;	
 }
 
-export const CUR_SETTINGS_VERSION = 6;
+export const CUR_SETTINGS_VERSION = 7;
 
 const getToday = () => {
 	const today = new Date();

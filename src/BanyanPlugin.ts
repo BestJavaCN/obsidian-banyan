@@ -156,6 +156,17 @@ export default class BanyanPlugin extends Plugin {
 			this.settings.viewSchemesExpanded = true;
 			this.settings.fontTheme = 'normal';
 		}
+		if (this.settings.settingsVersion < 7) {
+			// 移除旧的占位文件
+			const oldPlaceholderFile = `${this.settings.cardsDirectory}/banyan_editor_placeholder.md`;
+			const oldFile = this.app.vault.getFileByPath(oldPlaceholderFile);
+			if (oldFile) {
+				this.app.vault.delete(oldFile);
+				console.log('移除旧的占位文件', oldPlaceholderFile);
+			} else {
+				console.log('旧的占位文件不存在，无需移除', oldPlaceholderFile);
+			}
+		}
 		// *** 版本更新时，在以上添加更新逻辑 ***
 		this.settings.settingsVersion = CUR_SETTINGS_VERSION;
 		await this.ensureAllFileID();
