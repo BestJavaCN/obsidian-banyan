@@ -58,6 +58,9 @@ export class BanyanSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						useCombineStore.getState().updateCardsDirectory(value);
 					});
+				setTimeout(() => {
+					text.inputEl.blur(); // 防止打开设置面板时输入框自动聚焦
+				}, 0);				
 			});
 	}
 
