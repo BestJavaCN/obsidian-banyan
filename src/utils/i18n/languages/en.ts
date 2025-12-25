@@ -178,6 +178,7 @@ export default {
     notes_modified_at: "notes modified at",
 
     create_note: "Create note",
+    setting_panel: "Setting panel",
     random_browse: "Random browse",
 
     all_notes: "All notes",

@@ -67,6 +67,11 @@ export default class BanyanPlugin extends Plugin {
 		// do nothing
 	}
 
+	public openSettingsPanel(): void {
+        (this.app as any).setting.open();
+        (this.app as any).setting.openTabById(this.manifest.id);
+    }
+
 	randomRibbonIcons: HTMLElement[] = [];
 	addNoteRibbonIcon: HTMLElement | null = null;
 

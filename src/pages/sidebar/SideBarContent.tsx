@@ -23,11 +23,14 @@ export const SidebarContent = () => {
             <StatisticsInfo />
             <Heatmap onCickDate={handleClickDate} />
             <div className="sidebar-margin-top" />
+            <SidebarButton leftIconName="settings"
+                    label={i18n.t('setting_panel')}
+                    onClick={() => plugin.openSettingsPanel()} />
             {!Platform.isMobile && (
                 <SidebarButton leftIconName="lightbulb"
                     label={i18n.t('create_note')}
                     onClick={async () => await plugin.fileUtils.addFile()} />
-            )}
+            )}            
             <RandomBrowseSwitch />
             <div className="sidebar-margin-top" />
             <div className="sidebar-section-container">
