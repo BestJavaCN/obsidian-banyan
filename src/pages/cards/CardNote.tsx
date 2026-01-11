@@ -13,7 +13,8 @@ const NoteContentView = ({ app, fileInfo }: { app: App, fileInfo: FileInfo }) =>
   if (!leaf.current) leaf.current = new (WorkspaceLeaf as any)(app);
   const [overflow, setOverflow] = React.useState(false);
   const [isExpanded, setIsExpanded] = React.useState(false);
-  const settings = useCombineStore((state) => state.settings);
+  const cardContentMaxHeight = useCombineStore((state) => state.settings.cardContentMaxHeight);
+  const fontTheme = useCombineStore((state) => state.settings.fontTheme);
 
   React.useEffect(() => {
     const setupView = async () => {
@@ -49,8 +50,8 @@ const NoteContentView = ({ app, fileInfo }: { app: App, fileInfo: FileInfo }) =>
       window.requestAnimationFrame(() => {
         const ele = ref.current?.querySelector('.view-content');
         if (ele) {
-          const maxHeight = settings.cardContentMaxHeight === 'expand' ? Infinity :
-            settings.cardContentMaxHeight === 'short' ? 160 : 300;
+          const maxHeight = cardContentMaxHeight === 'expand' ? Infinity :
+            cardContentMaxHeight === 'short' ? 160 : 300;
           setOverflow(ele.scrollHeight > maxHeight);
         }
       });
@@ -59,7 +60,7 @@ const NoteContentView = ({ app, fileInfo }: { app: App, fileInfo: FileInfo }) =>
       observer.observe(ref.current);
     }
     return () => observer.disconnect();
-  }, [settings.cardContentMaxHeight]);
+  }, [cardContentMaxHeight]);
 
   const handleExpandToggle = () => {
     setIsExpanded(!isExpanded);
@@ -70,15 +71,15 @@ const NoteContentView = ({ app, fileInfo }: { app: App, fileInfo: FileInfo }) =>
 
     if (isExpanded) {
       className += " card-note-content--expanded";
-    } else if (settings.cardContentMaxHeight === 'expand') {
+    } else if (cardContentMaxHeight === 'expand') {
       className += " card-note-content--expand";
-    } else if (settings.cardContentMaxHeight === 'short') {
+    } else if (cardContentMaxHeight === 'short') {
       className += " card-note-content--short";
     } else {
       className += " card-note-content--normal";
     }
 
-    if (overflow && !isExpanded && settings.cardContentMaxHeight !== 'expand') {
+    if (overflow && !isExpanded && cardContentMaxHeight !== 'expand') {
       className += " card-note-content--overflow";
     }
 
@@ -87,8 +88,8 @@ const NoteContentView = ({ app, fileInfo }: { app: App, fileInfo: FileInfo }) =>
 
   return (
     <div style={{ position: 'relative' }}>
-      <div ref={ref} className={getContentClassName()} data-font-theme={settings.fontTheme} />
-      {overflow && !isExpanded && settings.cardContentMaxHeight !== 'expand' && (
+      <div ref={ref} className={getContentClassName()} data-font-theme={fontTheme} />
+      {overflow && !isExpanded && cardContentMaxHeight !== 'expand' && (
         <div
           className="card-note-expand-button"
           onClick={handleExpandToggle}
@@ -96,7 +97,7 @@ const NoteContentView = ({ app, fileInfo }: { app: App, fileInfo: FileInfo }) =>
           {i18n.t('general_expand')}
         </div>
       )}
-      {isExpanded && settings.cardContentMaxHeight !== 'expand' && (
+      {isExpanded && cardContentMaxHeight !== 'expand' && (
         <div
           className="card-note-expand-button"
           onClick={handleExpandToggle}
@@ -111,12 +112,12 @@ const NoteContentView = ({ app, fileInfo }: { app: App, fileInfo: FileInfo }) =>
 const CardNote = ({ fileInfo, isPinned }: { fileInfo: FileInfo, isPinned: boolean }) => {
 
   const plugin = useCombineStore((state) => state.plugin);
-  const settings = useCombineStore((state) => state.settings);
-  const appData = useCombineStore((state) => state.appData);
+  const showBacklinksInCardNote = useCombineStore((state) => state.settings.showBacklinksInCardNote);
+  const sortType = useCombineStore((state) => state.appData.sortType);
   // isPinned passed as prop
   const setCurScheme = useCombineStore((state) => state.setCurScheme);
   const app = plugin.app;
-  const isCreated = appData.sortType === 'created' || appData.sortType === 'earliestCreated';
+  const isCreated = sortType === 'created' || sortType === 'earliestCreated';
   const tags = fileInfo.tags;
   const shouldShowTitle = useCombineStore((state) => state.shouldShowTitle);
 
@@ -152,7 +153,7 @@ const CardNote = ({ fileInfo, isPinned }: { fileInfo: FileInfo, isPinned: boolea
       </div>
       <NoteContentView app={app} fileInfo={fileInfo} />
       <div className="card-note-footer">
-        {settings.showBacklinksInCardNote && (
+        {showBacklinksInCardNote && (
           <CardNoteBacklinksView app={app} fileInfo={fileInfo} />
         )}
       </div>

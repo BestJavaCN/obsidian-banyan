@@ -44,16 +44,16 @@ export const SidebarContent = () => {
 const StatisticsInfo = () => {
     const allFiles = useCombineStore((state) => state.allFiles);
     const allTags = useCombineStore((state) => state.allTags);
-    const appData = useCombineStore((state) => state.appData);
+    const firstUseDateStr = useCombineStore((state) => state.appData.firstUseDate);
 
     const usedDays = useMemo(() => {
-        if (!appData.firstUseDate) return 0;
-        const firstUseDate = new Date(appData.firstUseDate);
+        if (!firstUseDateStr) return 0;
+        const firstUseDate = new Date(firstUseDateStr);
         const now = new Date();
         const diffTime = Math.abs(now.getTime() - firstUseDate.getTime());
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         return diffDays;
-    }, [appData.firstUseDate]);
+    }, [firstUseDateStr]);
 
     return (
         <div className="statistics-info-container">
@@ -77,10 +77,10 @@ const StatisticsInfo = () => {
 }
 
 const RandomBrowseSwitch = () => {
-    const appData = useCombineStore((state) => state.appData);
+    const randomBrowse = useCombineStore((state) => state.appData.randomBrowse);
     const updateRandomBrowse = useCombineStore((state) => state.updateRandomBrowse);
 
-    const [isRandomBrowseOn, setIsRandomBrowseOn] = useState(appData.randomBrowse);
+    const [isRandomBrowseOn, setIsRandomBrowseOn] = useState(randomBrowse);
 
     const handleRandomBrowseToggle = () => {
         const newValue = !isRandomBrowseOn;

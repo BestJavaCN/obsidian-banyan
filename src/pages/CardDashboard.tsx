@@ -82,10 +82,13 @@ const CardDashboardView = ({ plugin }: { plugin: BanyanPlugin }) => {
   const hasEditingFiles = useCombineStore((state) => state.hasEditingFiles);
   const resetEditingFiles = useCombineStore((state) => state.resetEditingFiles);
 
-  const settings = useCombineStore((state) => state.settings);
-  const appData = useCombineStore((state) => state.appData);
+  const cardsDirectory = useCombineStore((state) => state.settings.cardsDirectory);
+  const useCardNote2 = useCombineStore((state) => state.settings.useCardNote2);
+  const cardsColumns = useCombineStore((state) => state.settings.cardsColumns);
+  const initialSortType = useCombineStore((state) => state.appData.sortType);
+  const randomBrowse = useCombineStore((state) => state.appData.randomBrowse);
   const [showSidebar, setShowSidebar] = useState<'normal' | 'hide' | 'show'>(Platform.isMobile ? 'hide' : 'normal');
-  const [sortType, setSortType] = useState<SortType>(appData.sortType || 'created');
+  const [sortType, setSortType] = useState<SortType>(initialSortType || 'created');
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const notesPerPage = 10; // 每页显示的笔记数量
@@ -121,7 +124,7 @@ const CardDashboardView = ({ plugin }: { plugin: BanyanPlugin }) => {
       setIsLoading(false);
     }
     requestFiles();
-  }, [sortType, curScheme, refreshFlag, settings.cardsDirectory, appData.randomBrowse]);
+  }, [sortType, curScheme, refreshFlag, cardsDirectory, randomBrowse]);
 
   useEffect(() => {
     if (needRefresh) {
@@ -219,7 +222,7 @@ const CardDashboardView = ({ plugin }: { plugin: BanyanPlugin }) => {
     }
 
     return () => resizeObserver.disconnect();
-  }, [settings.cardsColumns]);
+  }, [cardsColumns]);
 
   const handleBatchImportToView = () => {
     const modal = new ViewSelectModal(app, {
@@ -239,7 +242,7 @@ const CardDashboardView = ({ plugin }: { plugin: BanyanPlugin }) => {
     const isPinned = curScheme.pinned.includes(f.file.path);
     return (
       <div ref={isLastCard ? lastCardElementRef : null} key={f.file.path}>
-        {(!Platform.isMobile && settings.useCardNote2) ?
+        {(!Platform.isMobile && useCardNote2) ?
           <CardNote2 fileInfo={f} isPinned={isPinned} /> :
           <CardNote fileInfo={f} isPinned={isPinned} />}
       </div>
