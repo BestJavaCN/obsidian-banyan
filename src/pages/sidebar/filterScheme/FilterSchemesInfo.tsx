@@ -26,9 +26,9 @@ export const FilterSchemesInfo = () => {
     const [dragOverItem, setDragOverItem] = React.useState<{ scheme: FilterScheme, position: 'before' | 'inside' | 'after' } | null>(null);
     // 存储展开状态的方案ID
     const [expandedSchemeIds, setExpandedSchemeIds] = React.useState<number[]>([]);
-    
+
     // 从设置中获取展开状态
-    const filterSchemesExpanded = useCombineStore((state) => state.settings.filterSchemesExpanded);
+    const filterSchemesExpanded = useCombineStore((state) => state.appData.filterSchemesExpanded);
     const updateFilterSchemesExpanded = useCombineStore((state) => state.updateFilterSchemesExpanded);
 
     const handleCreateFilterScheme = (parentId: number | null = null) => {
@@ -163,7 +163,7 @@ export const FilterSchemesInfo = () => {
             setExpandedSchemeIds([...expandedSchemeIds, schemeId]);
         }
     };
-    
+
     // 切换整个FilterSchemes的展开/折叠状态
     const toggleFilterSchemesExpanded = () => {
         updateFilterSchemesExpanded(!filterSchemesExpanded);
@@ -179,15 +179,11 @@ export const FilterSchemesInfo = () => {
         return (
             <div
                 key={scheme.id}
-                className={`filter-scheme-item ${
-                    isDragging ? 'filter-scheme-item-dragging' : ''
-                } ${
-                    dragPosition === 'before' ? 'filter-scheme-item-drag-over-before' : ''
-                } ${
-                    dragPosition === 'after' ? 'filter-scheme-item-drag-over-after' : ''
-                } ${
-                    dragPosition === 'inside' ? 'filter-scheme-item-drag-over-inside' : ''
-                }`.trim()}
+                className={`filter-scheme-item ${isDragging ? 'filter-scheme-item-dragging' : ''
+                    } ${dragPosition === 'before' ? 'filter-scheme-item-drag-over-before' : ''
+                    } ${dragPosition === 'after' ? 'filter-scheme-item-drag-over-after' : ''
+                    } ${dragPosition === 'inside' ? 'filter-scheme-item-drag-over-inside' : ''
+                    }`.trim()}
                 draggable={!isDefault}
                 onDragStart={isDefault ? undefined : () => handleDragStart(scheme)}
                 onDragOver={(e) => handleDragOver(scheme, e)}
@@ -211,11 +207,11 @@ export const FilterSchemesInfo = () => {
     // 递归渲染方案列表
     const renderSchemeList = () => {
         const res: { scheme: FilterScheme, indentLevel: number }[] = [];
-        const dfs = (indentLevel: number, parentId: number | null) => {          
+        const dfs = (indentLevel: number, parentId: number | null) => {
             const curSchems = getChildSchemes(parentId);
             for (const scheme of curSchems) {
                 res.push({ scheme, indentLevel });
-                if (getChildSchemes(scheme.id).length === 0 || !expandedSchemeIds.includes(scheme.id)) continue;                
+                if (getChildSchemes(scheme.id).length === 0 || !expandedSchemeIds.includes(scheme.id)) continue;
                 dfs(indentLevel + 1, scheme.id);
             }
         };

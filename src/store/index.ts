@@ -26,10 +26,11 @@ export const useCombineStore = create<CombineState>()((...a) => ({
         set({
             plugin: plugin,
             settings: plugin.settings,
-            viewSchemes: plugin.settings.viewSchemes,
-            filterSchemes: plugin.settings.filterSchemes,
-            randomReviewFilters: plugin.settings.randomReviewFilters,
-            curScheme: getDefaultFilterScheme(plugin.settings.filterSchemes),
+            appData: plugin.appData,
+            viewSchemes: plugin.appData.viewSchemes,
+            filterSchemes: plugin.appData.filterSchemes,
+            randomReviewFilters: plugin.appData.randomReviewFilters,
+            curScheme: getDefaultFilterScheme(plugin.appData.filterSchemes),
         });
     },
     ...useDashBoardStore(...a),

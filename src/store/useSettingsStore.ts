@@ -2,14 +2,17 @@ import { BanyanPluginSettings } from "src/BanyanPluginSettings";
 import { StateCreator } from "zustand";
 import { CombineState } from ".";
 import { CardContentMaxHeightType, SortType, TitleDisplayMode, FontTheme } from "src/models/Enum";
+import { BanyanAppData } from "src/BanyanAppData";
 import moment from "moment";
 
 export interface SettingsState {
     settings: BanyanPluginSettings;
+    appData: BanyanAppData;
 
     // 设置更新方法
     updateSettings: (settings: Partial<BanyanPluginSettings>) => void;
-    
+    updateAppData: (appData: Partial<BanyanAppData>) => void;
+
     // 单个设置项的更新方法
     updateCardsDirectory: (directory: string) => void;
     updateOpenWhenStartObsidian: (open: boolean) => void;
@@ -22,7 +25,7 @@ export interface SettingsState {
     updateRandomBrowse: (randomBrowse: boolean) => void; // 新增：乱序浏览开关
     updateCardContentMaxHeight: (height: CardContentMaxHeightType) => void; // 新增：卡片内容最大高度
     updateFontTheme: (theme: FontTheme) => void; // 新增：字体大小主题
-    
+
     // UI state updates
     updateFilterSchemesExpanded: (expanded: boolean) => void;
     updateRandomReviewExpanded: (expanded: boolean) => void;
@@ -34,6 +37,7 @@ export interface SettingsState {
 
 export const useSettingsStore: StateCreator<CombineState, [], [], SettingsState> = (set, get) => ({
     settings: {} as BanyanPluginSettings,
+    appData: {} as BanyanAppData,
 
     updateSettings: (newSettings: Partial<BanyanPluginSettings>) => {
         const plugin = get().plugin;
@@ -41,6 +45,14 @@ export const useSettingsStore: StateCreator<CombineState, [], [], SettingsState>
         plugin.settings = updatedSettings;
         plugin.saveSettings();
         set({ settings: updatedSettings });
+    },
+
+    updateAppData: (newAppData: Partial<BanyanAppData>) => {
+        const plugin = get().plugin;
+        const updatedAppData = { ...plugin.appData, ...newAppData };
+        plugin.appData = updatedAppData;
+        plugin.saveAppData();
+        set({ appData: updatedAppData });
     },
 
     updateCardsDirectory: (directory: string) => {
@@ -60,11 +72,11 @@ export const useSettingsStore: StateCreator<CombineState, [], [], SettingsState>
     },
 
     updateSortType: (sortType: SortType) => {
-        get().updateSettings({ sortType });
+        get().updateAppData({ sortType });
     },
 
     updateFirstUseDate: (date: string) => {
-        get().updateSettings({ firstUseDate: date });
+        get().updateAppData({ firstUseDate: date });
     },
 
     updateShowBacklinksInCardNote: (show: boolean) => {
@@ -74,7 +86,7 @@ export const useSettingsStore: StateCreator<CombineState, [], [], SettingsState>
         get().updateSettings({ useCardNote2: use });
     },
     updateRandomBrowse: (randomBrowse: boolean) => {
-        get().updateSettings({ randomBrowse });
+        get().updateAppData({ randomBrowse });
     },
     updateCardContentMaxHeight: (height: CardContentMaxHeightType) => {
         get().updateSettings({ cardContentMaxHeight: height });
@@ -82,16 +94,16 @@ export const useSettingsStore: StateCreator<CombineState, [], [], SettingsState>
     updateFontTheme: (theme: FontTheme) => {
         get().updateSettings({ fontTheme: theme });
     },
-    
+
     // UI state updates
     updateFilterSchemesExpanded: (expanded: boolean) => {
-        get().updateSettings({ filterSchemesExpanded: expanded });
+        get().updateAppData({ filterSchemesExpanded: expanded });
     },
     updateRandomReviewExpanded: (expanded: boolean) => {
-        get().updateSettings({ randomReviewExpanded: expanded });
+        get().updateAppData({ randomReviewExpanded: expanded });
     },
     updateViewSchemesExpanded: (expanded: boolean) => {
-        get().updateSettings({ viewSchemesExpanded: expanded });
+        get().updateAppData({ viewSchemesExpanded: expanded });
     },
 
     shouldShowTitle: (basename: string) => {

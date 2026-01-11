@@ -1,7 +1,4 @@
-import { FilterScheme, getDefaultFilterScheme } from "./models/FilterScheme";
-import { ViewScheme } from "./models/ViewScheme";
-import { DefaultRandomReviewFilter, RandomReviewFilter } from "./models/RandomReviewFilters";
-import { CardContentMaxHeightType, SortType, TitleDisplayMode, FontTheme } from "./models/Enum";
+import { CardContentMaxHeightType, TitleDisplayMode, FontTheme } from "./models/Enum";
 
 export interface BanyanPluginSettings {
 	// basic
@@ -21,27 +18,12 @@ export interface BanyanPluginSettings {
 	useZkPrefixerFormat?: boolean;
 	showAddNoteRibbonIcon?: boolean;
 
-	// in app
-	sortType: SortType;
-	firstUseDate: string;
-	randomBrowse: boolean;
-	randomReviewFilters: RandomReviewFilter[];
-	filterSchemes: FilterScheme[];
-	viewSchemes: ViewScheme[];
-	
-	// UI state
-	filterSchemesExpanded: boolean;
-	randomReviewExpanded: boolean;
-	viewSchemesExpanded: boolean;	
+
 }
 
-export const CUR_SETTINGS_VERSION = 7;
+export const CUR_SETTINGS_VERSION = 8;
 
-const getToday = () => {
-	const today = new Date();
-	today.setHours(0, 0, 0, 0);
-	return today.toLocaleDateString();
-}
+
 
 export const DEFAULT_SETTINGS: BanyanPluginSettings = {
 	// basic
@@ -50,27 +32,16 @@ export const DEFAULT_SETTINGS: BanyanPluginSettings = {
 	cardsDirectory: 'cards',
 	cardsColumns: 1,
 
-    // card note 
-    titleDisplayMode: 'fileOnly',
+	// card note 
+	titleDisplayMode: 'fileOnly',
 	fontTheme: 'normal',
 	cardContentMaxHeight: 'normal',
 	showBacklinksInCardNote: false,
 	useCardNote2: false,
 
-    // add note
+	// add note
 	useZkPrefixerFormat: false,
-	showAddNoteRibbonIcon: true,	
+	showAddNoteRibbonIcon: true,
 
-	// in app
-	sortType: 'created',
-	firstUseDate: getToday(),
-	randomBrowse: false,
-	randomReviewFilters: [DefaultRandomReviewFilter],
-	filterSchemes: [getDefaultFilterScheme([])],
-	viewSchemes: [],
-	
-	// UI state
-	filterSchemesExpanded: true,
-	randomReviewExpanded: true,
-	viewSchemesExpanded: true,
+
 }

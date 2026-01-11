@@ -41,8 +41,9 @@ export const useDashBoardStore: StateCreator<CombineState, [], [], DashBoardStat
     requestData: async () => {
         const plugin = get().plugin;
         const settings = get().settings;
-        const sortType = settings.sortType;
-        const randomBrowse = settings.randomBrowse;
+        const appData = get().appData;
+        const sortType = appData.sortType;
+        const randomBrowse = appData.randomBrowse;
         const allFiles = plugin.fileUtils.getAllFiles();
         const allTags = plugin.fileUtils.getAllFilesTags();
         const curScheme = get().curScheme;

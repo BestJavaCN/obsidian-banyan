@@ -31,7 +31,7 @@ export const useViewSchemeStore: StateCreator<CombineState, [], [], ViewSchemeSt
     },
 
     updateViewSchemeList: (viewSchemes: ViewScheme[]) => {
-        get().updateSettings({ viewSchemes });
+        get().updateAppData({ viewSchemes });
         set({ viewSchemes });
     },
 });

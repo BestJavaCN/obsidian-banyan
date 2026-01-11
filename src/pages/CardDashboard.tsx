@@ -83,8 +83,9 @@ const CardDashboardView = ({ plugin }: { plugin: BanyanPlugin }) => {
   const resetEditingFiles = useCombineStore((state) => state.resetEditingFiles);
 
   const settings = useCombineStore((state) => state.settings);
+  const appData = useCombineStore((state) => state.appData);
   const [showSidebar, setShowSidebar] = useState<'normal' | 'hide' | 'show'>(Platform.isMobile ? 'hide' : 'normal');
-  const [sortType, setSortType] = useState<SortType>(settings.sortType || 'created');
+  const [sortType, setSortType] = useState<SortType>(appData.sortType || 'created');
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const notesPerPage = 10; // 每页显示的笔记数量
@@ -120,7 +121,7 @@ const CardDashboardView = ({ plugin }: { plugin: BanyanPlugin }) => {
       setIsLoading(false);
     }
     requestFiles();
-  }, [sortType, curScheme, refreshFlag, settings.cardsDirectory, settings.randomBrowse]);
+  }, [sortType, curScheme, refreshFlag, settings.cardsDirectory, appData.randomBrowse]);
 
   useEffect(() => {
     if (needRefresh) {

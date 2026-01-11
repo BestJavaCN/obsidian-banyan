@@ -84,17 +84,17 @@ export const useFilterSchemeStore: StateCreator<CombineState, [], [], FilterSche
             // 放在目标方案之后，跳过所有它的子方案，与目标方案同级            
             for (let i = targetIndex + 1; i < updatedSchemes.length; i++) {
                 if (updatedSchemes[i].parentId === targetScheme.parentId) break;
-                targetIndex = i;                
+                targetIndex = i;
             }
         }
-        updatedSchemes.splice(targetIndex+1, 0, schemeToMove);
+        updatedSchemes.splice(targetIndex + 1, 0, schemeToMove);
 
         get().updateFilterSchemeList(updatedSchemes);
     },
 
     updateFilterSchemeList: (filterSchemes: FilterScheme[]) => {
         const plugin = get().plugin;
-        get().updateSettings({ filterSchemes });
+        get().updateAppData({ filterSchemes });
         set({ filterSchemes });
     }
 });

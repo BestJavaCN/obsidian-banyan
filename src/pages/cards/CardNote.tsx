@@ -112,10 +112,11 @@ const CardNote = ({ fileInfo, isPinned }: { fileInfo: FileInfo, isPinned: boolea
 
   const plugin = useCombineStore((state) => state.plugin);
   const settings = useCombineStore((state) => state.settings);
+  const appData = useCombineStore((state) => state.appData);
   // isPinned passed as prop
   const setCurScheme = useCombineStore((state) => state.setCurScheme);
   const app = plugin.app;
-  const isCreated = settings.sortType === 'created' || settings.sortType === 'earliestCreated';
+  const isCreated = appData.sortType === 'created' || appData.sortType === 'earliestCreated';
   const tags = fileInfo.tags;
   const shouldShowTitle = useCombineStore((state) => state.shouldShowTitle);
 
