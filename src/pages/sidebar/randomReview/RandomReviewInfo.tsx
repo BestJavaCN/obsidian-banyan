@@ -18,9 +18,9 @@ export const RandomReviewInfo = () => {
     const reorderRandomReviewFilters = useCombineStore((state) => state.reorderRandomReviewFilters);
     const [draggedIndex, setDraggedIndex] = React.useState<number | null>(null);
     const [dragOverIndex, setDragOverIndex] = React.useState<number | null>(null);
-    
+
     // 从设置中获取展开状态
-    const randomReviewExpanded = useCombineStore((state) => state.settings.randomReviewExpanded);
+    const randomReviewExpanded = useCombineStore((state) => state.appData.randomReviewExpanded);
     const updateRandomReviewExpanded = useCombineStore((state) => state.updateRandomReviewExpanded);
 
     const handleCreateFilter = () => {
@@ -104,7 +104,7 @@ export const RandomReviewInfo = () => {
     const handleSelectFilter = (filter: RandomReviewFilter) => {
         plugin.fileUtils.openRandomFile(filter.tagFilter);
     };
-    
+
     // 切换RandomReview的展开/折叠状态
     const toggleRandomReviewExpanded = () => {
         updateRandomReviewExpanded(!randomReviewExpanded);

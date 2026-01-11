@@ -24,13 +24,13 @@ export const SidebarContent = () => {
             <Heatmap onCickDate={handleClickDate} />
             <div className="sidebar-margin-top" />
             <SidebarButton leftIconName="settings"
-                    label={i18n.t('setting_panel')}
-                    onClick={() => plugin.openSettingsPanel()} />
+                label={i18n.t('setting_panel')}
+                onClick={() => plugin.openSettingsPanel()} />
             {!Platform.isMobile && (
                 <SidebarButton leftIconName="lightbulb"
                     label={i18n.t('create_note')}
                     onClick={async () => await plugin.fileUtils.addFile()} />
-            )}            
+            )}
             <RandomBrowseSwitch />
             <div className="sidebar-margin-top" />
             <div className="sidebar-section-container">
@@ -44,16 +44,16 @@ export const SidebarContent = () => {
 const StatisticsInfo = () => {
     const allFiles = useCombineStore((state) => state.allFiles);
     const allTags = useCombineStore((state) => state.allTags);
-    const settings = useCombineStore((state) => state.settings);
+    const appData = useCombineStore((state) => state.appData);
 
     const usedDays = useMemo(() => {
-        if (!settings.firstUseDate) return 0;
-        const firstUseDate = new Date(settings.firstUseDate);
+        if (!appData.firstUseDate) return 0;
+        const firstUseDate = new Date(appData.firstUseDate);
         const now = new Date();
         const diffTime = Math.abs(now.getTime() - firstUseDate.getTime());
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         return diffDays;
-    }, [settings.firstUseDate]);
+    }, [appData.firstUseDate]);
 
     return (
         <div className="statistics-info-container">
@@ -77,10 +77,10 @@ const StatisticsInfo = () => {
 }
 
 const RandomBrowseSwitch = () => {
-    const settings = useCombineStore((state) => state.settings);
+    const appData = useCombineStore((state) => state.appData);
     const updateRandomBrowse = useCombineStore((state) => state.updateRandomBrowse);
 
-    const [isRandomBrowseOn, setIsRandomBrowseOn] = useState(settings.randomBrowse);
+    const [isRandomBrowseOn, setIsRandomBrowseOn] = useState(appData.randomBrowse);
 
     const handleRandomBrowseToggle = () => {
         const newValue = !isRandomBrowseOn;
