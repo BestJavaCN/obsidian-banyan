@@ -5,6 +5,7 @@ import FolderSuggest from './components/FolderSuggest';
 import { useCombineStore } from './store';
 import { CardContentMaxHeightType, FontTheme } from './models/Enum';
 import { openMigrateTitleModal } from './components/MigrateTitleModal';
+import { openRemoveIdModal } from './components/RemoveIdModal';
 
 export class BanyanSettingTab extends PluginSettingTab {
 	plugin: BanyanPlugin;
@@ -20,13 +21,13 @@ export class BanyanSettingTab extends PluginSettingTab {
 		// 基础设置
 		new Setting(containerEl).setName(i18n.t('setting_header_basic')).setHeading();
 		this.setupCardsDirectorySetting(containerEl);
-		this.setupOpenWhenStartObsidianSetting(containerEl);		
+		this.setupOpenWhenStartObsidianSetting(containerEl);
 		this.setupCardsColumnsSetting(containerEl);
 
 		// 卡片视图
 		new Setting(containerEl).setName(i18n.t('setting_header_cards')).setHeading();
 		this.setupTitleDisplayModeSetting(containerEl);
-		this.setupFontThemeSetting(containerEl);		
+		this.setupFontThemeSetting(containerEl);
 		this.setupCardContentMaxHeightSetting(containerEl);
 		this.setupShowBacklinksSetting(containerEl);
 		this.setupUseCardNote2Setting(containerEl);
@@ -35,11 +36,14 @@ export class BanyanSettingTab extends PluginSettingTab {
 		new Setting(containerEl).setName(i18n.t('setting_header_editor')).setHeading();
 		this.setupUseZkPrefixerFormatSetting(containerEl);
 		this.setupShowAddNoteRibbonSetting(containerEl);
+
+		// 旧版清理
+		new Setting(containerEl).setName(i18n.t('setting_header_clean')).setHeading();
 		this.setupMigrateTitleToFilenameSetting(containerEl);
 	}
 
 	setupCardsDirectorySetting(containerEl: HTMLElement) {
-		const dateDesc = document.createDocumentFragment();  
+		const dateDesc = document.createDocumentFragment();
 		dateDesc.appendText(i18n.t('setting_note_directory_desc1'));
 		dateDesc.createEl('br');
 		dateDesc.appendText(i18n.t('setting_note_directory_desc2'));
@@ -60,7 +64,7 @@ export class BanyanSettingTab extends PluginSettingTab {
 					});
 				setTimeout(() => {
 					text.inputEl.blur(); // 防止打开设置面板时输入框自动聚焦
-				}, 0);				
+				}, 0);
 			});
 	}
 
@@ -197,15 +201,24 @@ export class BanyanSettingTab extends PluginSettingTab {
 	}
 
 	setupMigrateTitleToFilenameSetting(containerEl: HTMLElement) {
-        new Setting(containerEl)
-            .setName(i18n.t('setting_migrate_title_to_filename_name'))
-            .setDesc(i18n.t('setting_migrate_title_to_filename_desc'))
-            .addButton(btn => {
-                btn.setButtonText(i18n.t('setting_migrate_title_to_filename_btn'))
-                    .onClick(async () => {
-                        openMigrateTitleModal({ app: this.app, plugin: this.plugin });
-                    });
-            });
+		new Setting(containerEl)
+			.setName(i18n.t('setting_migrate_title_to_filename_name'))
+			.setDesc(i18n.t('setting_migrate_title_to_filename_desc'))
+			.addButton(btn => {
+				btn.setButtonText(i18n.t('setting_migrate_title_to_filename_btn'))
+					.onClick(async () => {
+						openMigrateTitleModal({ app: this.app, plugin: this.plugin });
+					});
+			});
+		new Setting(containerEl)
+			.setName(i18n.t('setting_remove_id_name'))
+			.setDesc(i18n.t('setting_remove_id_desc'))
+			.addButton(btn => {
+				btn.setButtonText(i18n.t('setting_remove_id_btn'))
+					.onClick(async () => {
+						openRemoveIdModal({ app: this.app, plugin: this.plugin });
+					});
+			});
 	}
 
 }

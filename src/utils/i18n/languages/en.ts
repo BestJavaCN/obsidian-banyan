@@ -62,6 +62,7 @@ export default {
     setting_header_basic: "⚙️ Basic",
     setting_header_cards: "🗂 Card view",
     setting_header_editor: "✏️ Create note",
+    setting_header_clean: "🧹 Clean",
 
     setting_note_directory_name: "Notes directory",
     setting_note_directory_desc1: "This plugin only manages notes in this directory.",
@@ -107,7 +108,7 @@ export default {
 
     // migrate: frontmatter.title -> filename
     setting_migrate_title_to_filename_name: "Migrate property title to filename",
-    setting_migrate_title_to_filename_desc: "Scan all notes in the working directory with \"title\" property, rename file to that title and remove the property.",
+    setting_migrate_title_to_filename_desc: "In early versions, the title property of notes was used as the filename. Now this feature is removed. Scan all notes in the working directory with \"title\" property, rename file to that title and remove the property.",
     setting_migrate_title_to_filename_btn: "Start migration",
 
     // new migrate modal
@@ -120,6 +121,15 @@ export default {
     migrate_progress: "Progress: done {{done}} / {{total}}, success {{success}}.",
     migrate_empty_list: "No notes need migration.",
     migrate_rescan: "Rescan",
+
+    // remove id modal
+    setting_remove_id_name: "Remove frontmatter ID",
+    setting_remove_id_desc: "In early versions, the id property was used as unique identifier. Now this feature is removed. Scan all notes and remove the id property.",
+    setting_remove_id_btn: "Start removal",
+    remove_id_modal_title: "Remove frontmatter ID",
+    remove_id_modal_desc: "Select the notes to remove ID. Please backup first just in case.",
+    remove_id_start: "Start removal",
+    remove_id_empty_list: "No notes found with ID.",
 
     /* 命令和ribbon */
     add_card_note: "Add card note",

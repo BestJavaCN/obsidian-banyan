@@ -296,6 +296,42 @@ export class FileUtils {
     return { success, total: list.length };
   }
   //#endregion
+
+  //#region 移除：FrontMatter.id
+  getFilesWithFrontmatterId(): { file: TFile; id: any }[] {
+    const res: { file: TFile; id: any }[] = [];
+    const files = this.getAllRawFiles();
+    for (const file of files) {
+      const cache = this.app.metadataCache.getFileCache(file);
+      const id = (cache as any)?.frontmatter?.id;
+      if (id !== undefined) {
+        res.push({ file, id });
+      }
+    }
+    return res;
+  }
+
+  async removeFrontmatterId(targets?: { file: TFile }[], onProgress?: (originalPath: string, file: TFile, ok: boolean) => void) {
+    const list = targets ?? this.getFilesWithFrontmatterId();
+    let success = 0;
+    for (const { file } of list) {
+      try {
+        const originalMtime = file.stat.mtime;
+        const originalCtime = file.stat.ctime;
+        const originalPath = file.path;
+        await this.app.fileManager.processFrontMatter(file, (fm) => {
+          if (fm.id !== undefined) delete fm.id;
+        }, { mtime: originalMtime, ctime: originalCtime });
+        success += 1;
+        onProgress && onProgress(originalPath, file, true);
+      } catch (e) {
+        console.error('移除ID失败', file.path, e);
+        onProgress && onProgress(file.path, file, false);
+      }
+    }
+    return { success, total: list.length };
+  }
+  //#endregion
 }
 
 function getRandomNumber(max: number) {
