@@ -9,7 +9,8 @@ import CardNoteBacklinksView from "./CardNoteBacklinksView";
 
 const NoteContentView = ({ app, fileInfo }: { app: App, fileInfo: FileInfo }) => {
   const ref = React.useRef<HTMLDivElement>(null);
-  const leaf = new (WorkspaceLeaf as any)(app);
+  const leaf = React.useRef<any>(null);
+  if (!leaf.current) leaf.current = new (WorkspaceLeaf as any)(app);
   const [overflow, setOverflow] = React.useState(false);
   const [isExpanded, setIsExpanded] = React.useState(false);
   const settings = useCombineStore((state) => state.settings);
@@ -18,29 +19,41 @@ const NoteContentView = ({ app, fileInfo }: { app: App, fileInfo: FileInfo }) =>
     const setupView = async () => {
       if (!ref.current) return;
       try {
-        await (leaf as WorkspaceLeaf).openFile(fileInfo.file);
-        if (!(leaf.view instanceof MarkdownView)) {
+        await (leaf.current as WorkspaceLeaf).openFile(fileInfo.file);
+        if (!(leaf.current.view instanceof MarkdownView)) {
           console.log('视图初始化失败或类型不正确', fileInfo.file.name);
           return;
         }
-        await leaf.view.setState(
-          { ...leaf.view.getState(), mode: 'preview' },
+        await leaf.current.view.setState(
+          { ...leaf.current.view.getState(), mode: 'preview' },
           { history: false })
         ref.current?.empty();
-        ref.current?.appendChild(leaf.containerEl);
+        ref.current?.appendChild(leaf.current.containerEl);
       } catch (e) { console.log('打开文件失败', e, fileInfo) };
     };
     setupView();
   }, [fileInfo.file.path]);
 
+  // Cleanup leaf on unmount
+  React.useEffect(() => {
+    return () => {
+      if (leaf.current) {
+        leaf.current.detach();
+        leaf.current = null;
+      }
+    }
+  }, []);
+
   React.useEffect(() => {
     const observer = new ResizeObserver(() => {
-      const ele = ref.current?.querySelector('.view-content');
-      if (ele) {
-        const maxHeight = settings.cardContentMaxHeight === 'expand' ? Infinity :
-          settings.cardContentMaxHeight === 'short' ? 160 : 300;
-        setOverflow(ele.scrollHeight > maxHeight);
-      }
+      window.requestAnimationFrame(() => {
+        const ele = ref.current?.querySelector('.view-content');
+        if (ele) {
+          const maxHeight = settings.cardContentMaxHeight === 'expand' ? Infinity :
+            settings.cardContentMaxHeight === 'short' ? 160 : 300;
+          setOverflow(ele.scrollHeight > maxHeight);
+        }
+      });
     });
     if (ref.current) {
       observer.observe(ref.current);
@@ -95,12 +108,11 @@ const NoteContentView = ({ app, fileInfo }: { app: App, fileInfo: FileInfo }) =>
   );
 };
 
-const CardNote = ({ fileInfo }: { fileInfo: FileInfo }) => {
+const CardNote = ({ fileInfo, isPinned }: { fileInfo: FileInfo, isPinned: boolean }) => {
 
   const plugin = useCombineStore((state) => state.plugin);
   const settings = useCombineStore((state) => state.settings);
-  // 使用 fileInfo.file.path 判断是否已置顶
-  const isPinned = useCombineStore((state) => state.curScheme.pinned.includes(fileInfo.file.path));
+  // isPinned passed as prop
   const setCurScheme = useCombineStore((state) => state.setCurScheme);
   const app = plugin.app;
   const isCreated = settings.sortType === 'created' || settings.sortType === 'earliestCreated';

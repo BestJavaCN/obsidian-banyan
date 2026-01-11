@@ -68,16 +68,14 @@ const CardDashboardView = ({ plugin }: { plugin: BanyanPlugin }) => {
   const curScheme = useCombineStore((state) => state.curScheme);
   const filterSchemes = useCombineStore((state) => state.filterSchemes);
   const viewSchemes = useCombineStore((state) => state.viewSchemes);
-  const setCurSchemeOriginal = useCombineStore((state) => state.setCurScheme);
+  const setCurScheme = useCombineStore((state) => state.setCurScheme);
 
-  // 包装 setCurScheme 函数，在切换 scheme 时滚动到顶部
-  const setCurScheme = useCallback((scheme: any) => {
-    setCurSchemeOriginal(scheme);
-    // 滚动到页面顶部
+  // Scroll to top when scheme changes
+  useEffect(() => {
     if (dashboardRef.current) {
-      dashboardRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      dashboardRef.current.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [setCurSchemeOriginal]);
+  }, [curScheme]);
   const updateViewScheme = useCombineStore((state) => state.updateViewScheme);
   const curSchemeNotesLength = useCombineStore((state) => state.curSchemeFiles.length);
   const needRefresh = useCombineStore((state) => state.needRefresh);
@@ -176,11 +174,45 @@ const CardDashboardView = ({ plugin }: { plugin: BanyanPlugin }) => {
       setColCount(cnt);
     };
 
-    // 初始化时执行一次
-    updateCol();
+    // 初始化时执行一次，使用 requestAnimationFrame 避免阻塞
+    requestAnimationFrame(updateCol);
 
     // 使用ResizeObserver监听主容器尺寸变化
-    const resizeObserver = new ResizeObserver(updateCol);
+    const resizeObserver = new ResizeObserver((entries) => {
+      window.requestAnimationFrame(() => {
+        if (!Array.isArray(entries) || !entries.length) return;
+        const entry = entries[0];
+        // Use contentRect.width to avoid forced reflow from clientWidth
+        const containerWidth = entry.contentRect.width;
+
+        const update = () => {
+          if (Platform.isMobile) {
+            setShowSidebar('hide');
+            setColCount(1);
+            return;
+          }
+
+          const _showSidebar = containerWidth >= 920 ? 'normal' : 'hide'; // 920 是试验效果得来的
+          setShowSidebar(_showSidebar);
+
+          const currentSettings = useCombineStore.getState().settings;
+          const cardsColumns = currentSettings.cardsColumns;
+          if (cardsColumns == 1) {
+            setColCount(1);
+            return;
+          }
+
+          const mainWidth = containerWidth - (_showSidebar == 'normal' ? 400 : 0);
+          const cardWidth = 620;
+          const cardsPadding = 24;
+          const widthFor2Cols = cardWidth + cardsPadding + cardWidth;
+          const cnt = mainWidth >= widthFor2Cols ? 2 : 1;
+          setColCount(cnt);
+        };
+        update();
+      });
+    });
+
     if (dashboardRef.current) {
       resizeObserver.observe(dashboardRef.current);
     }
@@ -203,9 +235,12 @@ const CardDashboardView = ({ plugin }: { plugin: BanyanPlugin }) => {
 
   const cardNodes = displayFiles.map((f, index) => {
     const isLastCard = index === displayFiles.length - 1;
+    const isPinned = curScheme.pinned.includes(f.file.path);
     return (
       <div ref={isLastCard ? lastCardElementRef : null} key={f.file.path}>
-        {(!Platform.isMobile && settings.useCardNote2) ? <CardNote2 fileInfo={f} /> : <CardNote fileInfo={f} />}
+        {(!Platform.isMobile && settings.useCardNote2) ?
+          <CardNote2 fileInfo={f} isPinned={isPinned} /> :
+          <CardNote fileInfo={f} isPinned={isPinned} />}
       </div>
     );
   });

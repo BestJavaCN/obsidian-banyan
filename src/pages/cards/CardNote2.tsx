@@ -35,18 +35,30 @@ const NoteContentView = ({ app, fileInfo, editMode, endEdit }: { app: App, fileI
     setupView();
   }, [fileInfo.file.path, editMode]);
 
+  // Cleanup leaf on unmount
+  React.useEffect(() => {
+    return () => {
+      if (leaf.current) {
+        leaf.current.detach();
+        leaf.current = null;
+      }
+    }
+  }, []);
+
   React.useEffect(() => {
     if (editMode) {
       setOverflow(false);
       return;
     }
     const observer = new ResizeObserver(() => {
-      const ele = ref.current?.querySelector('.view-content');
-      if (ele) {
-        const maxHeight = settings.cardContentMaxHeight === 'expand' ? Infinity :
-          settings.cardContentMaxHeight === 'short' ? 160 : 300;
-        setOverflow(ele.scrollHeight > maxHeight);
-      }
+      window.requestAnimationFrame(() => {
+        const ele = ref.current?.querySelector('.view-content');
+        if (ele) {
+          const maxHeight = settings.cardContentMaxHeight === 'expand' ? Infinity :
+            settings.cardContentMaxHeight === 'short' ? 160 : 300;
+          setOverflow(ele.scrollHeight > maxHeight);
+        }
+      });
     });
     if (ref.current) {
       observer.observe(ref.current);
@@ -115,11 +127,11 @@ const NoteContentView = ({ app, fileInfo, editMode, endEdit }: { app: App, fileI
   );
 };
 
-const CardNote2 = ({ fileInfo }: { fileInfo: FileInfo }) => {
+const CardNote2 = ({ fileInfo, isPinned }: { fileInfo: FileInfo, isPinned: boolean }) => {
 
   const plugin = useCombineStore((state) => state.plugin);
   const settings = useCombineStore((state) => state.settings);
-  const isPinned = useCombineStore((state) => state.curScheme.pinned.includes(fileInfo.file.path));
+  // isPinned passed as prop
   const setCurScheme = useCombineStore((state) => state.setCurScheme);
   const app = plugin.app;
   const isCreated = settings.sortType === 'created' || settings.sortType === 'earliestCreated';
