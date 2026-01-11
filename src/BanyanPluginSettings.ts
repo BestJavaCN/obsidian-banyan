@@ -1,4 +1,4 @@
-import { CardContentMaxHeightType, TitleDisplayMode, FontTheme } from "./models/Enum";
+import { CardContentMaxHeightType, TitleDisplayMode, FontTheme, NewNoteLocationMode } from "./models/Enum";
 
 export interface BanyanPluginSettings {
 	// basic
@@ -17,7 +17,8 @@ export interface BanyanPluginSettings {
 	// add note 
 	useZkPrefixerFormat?: boolean;
 	showAddNoteRibbonIcon?: boolean;
-
+	newNoteLocationMode?: NewNoteLocationMode;
+	customNewNoteLocation?: string;
 
 }
 
@@ -42,6 +43,7 @@ export const DEFAULT_SETTINGS: BanyanPluginSettings = {
 	// add note
 	useZkPrefixerFormat: false,
 	showAddNoteRibbonIcon: true,
-
+	newNoteLocationMode: 'current',
+	customNewNoteLocation: '',
 
 }

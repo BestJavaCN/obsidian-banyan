@@ -116,12 +116,19 @@ export class FileUtils {
   }
 
   private async getNewNoteFilePath(title?: string) {
-    const now = new Date();
-    const year = now.getFullYear().toString();
-    const quarter = Math.floor((now.getMonth() + 3) / 3).toString();
-    const month = (now.getMonth() + 1).toString().padStart(2, '0').toString();
-    const day = now.getDate().toString().padStart(2, '0').toString();
-    const folderPath = `${this.dir}/${i18n.t('create_note_folder_path', { year, quarter, month, day })}`;
+
+    let folderPath: string;
+    if (this.plugin.settings.newNoteLocationMode === 'custom') {
+      folderPath = this.plugin.settings.customNewNoteLocation || this.dir;
+    } else {
+      const now = new Date();
+      const year = now.getFullYear().toString();
+      const quarter = Math.floor((now.getMonth() + 3) / 3).toString();
+      const month = (now.getMonth() + 1).toString().padStart(2, '0').toString();
+      const day = now.getDate().toString().padStart(2, '0').toString();
+      folderPath = `${this.dir}/${i18n.t('create_note_folder_path', { year, quarter, month, day })}`;
+    }
+
     await this.ensureDirectoryExists(folderPath);
     const formatStr = this.getZkPrefixerFormat();
     let fileName: string = "";

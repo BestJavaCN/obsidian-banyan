@@ -62,7 +62,7 @@ export default {
     setting_header_basic: "⚙️ 基础设置",
     setting_header_cards: "🗂 卡片视图",
     setting_header_editor: "✏️ 新建笔记",
-    setting_header_clean: "🧹 旧版清理",
+    setting_header_clean: "⚠️ 旧版数据清理",
 
     setting_note_directory_name: "笔记目录",
     setting_note_directory_desc1: "「卡片面板」只会管理该目录下的所有笔记。",
@@ -95,6 +95,13 @@ export default {
 
     setting_show_add_note_ribbon_name: "在功能区显示创建笔记按钮",
     setting_show_add_note_ribbon_desc: "启用后，会在Obsidian的功能区显示创建笔记的按钮。",
+
+    setting_new_note_location_name: "新建笔记存放位置",
+    setting_new_note_location_desc: "笔记默认将按“年/季度/月/日”的路径格式存放，也可以自定义存放路径。",
+    setting_new_note_location_current: "默认",
+    setting_new_note_location_custom: "自定义",
+    setting_custom_new_note_location_name: "自定义存放路径",
+    setting_custom_new_note_location_desc: "路径为空时使用「笔记目录」。注意，若路径设置在「笔记目录」之外，卡片面板将无法显示新建笔记。",
 
     setting_card_content_max_height_name: "内容最大高度",
     setting_card_content_max_height_desc: "内容区(不包括标题)的最大显示高度，内容过长时折叠。",

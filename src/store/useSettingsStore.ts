@@ -1,7 +1,7 @@
 import { BanyanPluginSettings } from "src/BanyanPluginSettings";
 import { StateCreator } from "zustand";
 import { CombineState } from ".";
-import { CardContentMaxHeightType, SortType, TitleDisplayMode, FontTheme } from "src/models/Enum";
+import { CardContentMaxHeightType, SortType, TitleDisplayMode, FontTheme, NewNoteLocationMode } from "src/models/Enum";
 import { BanyanAppData } from "src/BanyanAppData";
 import moment from "moment";
 
@@ -24,7 +24,9 @@ export interface SettingsState {
     updateUseCardNote2: (use: boolean) => void; // 新增
     updateRandomBrowse: (randomBrowse: boolean) => void; // 新增：乱序浏览开关
     updateCardContentMaxHeight: (height: CardContentMaxHeightType) => void; // 新增：卡片内容最大高度
-    updateFontTheme: (theme: FontTheme) => void; // 新增：字体大小主题
+    updateFontTheme: (theme: FontTheme) => void;
+    updateNewNoteLocationMode: (mode: NewNoteLocationMode) => void;
+    updateCustomNewNoteLocation: (directory: string) => void;
 
     // UI state updates
     updateFilterSchemesExpanded: (expanded: boolean) => void;
@@ -93,6 +95,12 @@ export const useSettingsStore: StateCreator<CombineState, [], [], SettingsState>
     },
     updateFontTheme: (theme: FontTheme) => {
         get().updateSettings({ fontTheme: theme });
+    },
+    updateNewNoteLocationMode: (mode: NewNoteLocationMode) => {
+        get().updateSettings({ newNoteLocationMode: mode });
+    },
+    updateCustomNewNoteLocation: (directory: string) => {
+        get().updateSettings({ customNewNoteLocation: directory });
     },
 
     // UI state updates

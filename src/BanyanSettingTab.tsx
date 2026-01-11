@@ -3,7 +3,7 @@ import BanyanPlugin from './main';
 import { i18n } from './utils/i18n';
 import FolderSuggest from './components/FolderSuggest';
 import { useCombineStore } from './store';
-import { CardContentMaxHeightType, FontTheme } from './models/Enum';
+import { CardContentMaxHeightType, FontTheme, NewNoteLocationMode } from './models/Enum';
 import { openMigrateTitleModal } from './components/MigrateTitleModal';
 import { openRemoveIdModal } from './components/RemoveIdModal';
 
@@ -34,6 +34,7 @@ export class BanyanSettingTab extends PluginSettingTab {
 
 		// 编辑
 		new Setting(containerEl).setName(i18n.t('setting_header_editor')).setHeading();
+		this.setupNewNoteLocationSetting(containerEl);
 		this.setupUseZkPrefixerFormatSetting(containerEl);
 		this.setupShowAddNoteRibbonSetting(containerEl);
 
@@ -164,6 +165,46 @@ export class BanyanSettingTab extends PluginSettingTab {
 						// 重新设置功能区图标
 						this.plugin.setupCreateNoteRibbonBtn();
 					});
+			});
+	}
+
+	setupNewNoteLocationSetting(containerEl: HTMLElement) {
+		const settings = useCombineStore.getState().settings;
+		new Setting(containerEl)
+			.setName(i18n.t('setting_new_note_location_name'))
+			.setDesc(i18n.t('setting_new_note_location_desc'))
+			.addDropdown(dropdown => {
+				dropdown.addOption('current', i18n.t('setting_new_note_location_current'))
+					.addOption('custom', i18n.t('setting_new_note_location_custom'))
+					.setValue(settings.newNoteLocationMode ?? 'current')
+					.onChange(async (value) => {
+						useCombineStore.getState().updateNewNoteLocationMode(value as NewNoteLocationMode);
+						this.display(); // 刷新以显示/隐藏自定义路径设置
+					});
+			});
+
+		if (settings.newNoteLocationMode === 'custom') {
+			this.setupCustomNewNoteLocationSetting(containerEl);
+		}
+	}
+
+	setupCustomNewNoteLocationSetting(containerEl: HTMLElement) {
+		const settings = useCombineStore.getState().settings;
+		new Setting(containerEl)
+			.setName(i18n.t('setting_custom_new_note_location_name'))
+			.setDesc(i18n.t('setting_custom_new_note_location_desc'))
+			.addText(async text => {
+				new FolderSuggest(this.app, text.inputEl, async (value) => {
+					text.setValue(value);
+					useCombineStore.getState().updateCustomNewNoteLocation(value);
+				});
+				text.setValue(settings.customNewNoteLocation || "")
+					.onChange(async (value) => {
+						useCombineStore.getState().updateCustomNewNoteLocation(value);
+					});
+				setTimeout(() => {
+					text.inputEl.blur();
+				}, 0);
 			});
 	}
 

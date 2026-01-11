@@ -62,7 +62,7 @@ export default {
     setting_header_basic: "⚙️ Basic",
     setting_header_cards: "🗂 Card view",
     setting_header_editor: "✏️ Create note",
-    setting_header_clean: "🧹 Clean",
+    setting_header_clean: "⚠️ Old Data Cleanup",
 
     setting_note_directory_name: "Notes directory",
     setting_note_directory_desc1: "This plugin only manages notes in this directory.",
@@ -93,6 +93,13 @@ export default {
 
     setting_show_add_note_ribbon_name: "Show add note button in ribbon",
     setting_show_add_note_ribbon_desc: "Enable to show the add note button in Obsidian's ribbon.",
+
+    setting_new_note_location_name: "New note location",
+    setting_new_note_location_desc: "Notes will be stored in \"Notes directory\" by default. You can also set a custom location.",
+    setting_new_note_location_current: "Default",
+    setting_new_note_location_custom: "Custom",
+    setting_custom_new_note_location_name: "Custom location",
+    setting_custom_new_note_location_desc: "If empty, will use \"Notes directory\" by default. Note that if the path is outside of \"Notes directory\", new notes won't be display in the card panel.",
 
     setting_card_content_max_height_name: "Content max height",
     setting_card_content_max_height_desc: "The maximum display height of card content area (excluding title), fold extra content.",

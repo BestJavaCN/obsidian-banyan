@@ -5,3 +5,5 @@ export type CardContentMaxHeightType = 'short' | 'normal' | 'expand';
 export type TitleDisplayMode = 'fileOnly' | 'none';
 
 export type FontTheme = 'small' | 'normal';
+
+export type NewNoteLocationMode = 'current' | 'custom';
