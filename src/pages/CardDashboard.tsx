@@ -1,6 +1,6 @@
 import { ItemView, WorkspaceLeaf, Menu, Platform } from "obsidian";
 import BanyanPlugin from "src/main";
-import { StrictMode, useEffect, useState, useRef, useCallback } from 'react';
+import { StrictMode, useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { Root, createRoot } from 'react-dom/client';
 import * as React from "react";
 import CardNote from "./cards/CardNote";
@@ -237,7 +237,7 @@ const CardDashboardView = ({ plugin }: { plugin: BanyanPlugin }) => {
     modal.open();
   };
 
-  const cardNodes = displayFiles.map((f, index) => {
+  const cardNodes = useMemo(() => displayFiles.map((f, index) => {
     const isLastCard = index === displayFiles.length - 1;
     const isPinned = curScheme.pinned.includes(f.file.path);
     return (
@@ -247,7 +247,7 @@ const CardDashboardView = ({ plugin }: { plugin: BanyanPlugin }) => {
           <CardNote fileInfo={f} isPinned={isPinned} />}
       </div>
     );
-  });
+  }), [displayFiles, curScheme.pinned, lastCardElementRef, useCardNote2]);
 
   // 瀑布流布局
   const getColumns = (cards: React.JSX.Element[], colCount: number) => {
@@ -257,7 +257,7 @@ const CardDashboardView = ({ plugin }: { plugin: BanyanPlugin }) => {
     });
     return cols;
   };
-  const columns = getColumns(cardNodes, colCount);
+  const columns = useMemo(() => getColumns(cardNodes, colCount), [cardNodes, colCount]);
 
   return (
     <div className="dashboard-container" ref={dashboardRef}>
