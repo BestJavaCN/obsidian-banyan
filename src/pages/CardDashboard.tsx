@@ -13,10 +13,22 @@ import { HeaderView } from "./header/HeaderView";
 import EmptyStateCard from "./cards/EmptyStateCard";
 import { ViewSelectModal } from "./sidebar/viewScheme/ViewSelectModal";
 import { createFileWatcher } from 'src/utils/fileWatcher';
+import { useDashboardLayout } from 'src/hooks/useDashboardLayout';
+import { useInfiniteScroll } from 'src/hooks/useInfiniteScroll';
 import AddNoteView from "./header/AddNoteView";
 import { i18n } from "src/utils/i18n";
 import { useCombineStore } from "src/store";
 import { SortType } from "src/models/Enum";
+import { SortFilesButton } from "./header/SortFilesButton";
+
+// 瀑布流布局辅助函数
+const getColumns = (cards: React.JSX.Element[], colCount: number) => {
+  const cols: React.JSX.Element[][] = Array.from({ length: colCount }, () => []);
+  cards.forEach((card, idx) => {
+    cols[idx % colCount].push(card);
+  });
+  return cols;
+};
 
 export const CARD_DASHBOARD_VIEW_TYPE = "dashboard-view";
 
@@ -84,15 +96,12 @@ const CardDashboardView = ({ plugin }: { plugin: BanyanPlugin }) => {
 
   const cardsDirectory = useCombineStore((state) => state.settings.cardsDirectory);
   const useCardNote2 = useCombineStore((state) => state.settings.useCardNote2);
-  const cardsColumns = useCombineStore((state) => state.settings.cardsColumns);
-  const initialSortType = useCombineStore((state) => state.appData.sortType);
+  const sortType = useCombineStore((state) => state.appData.sortType) || 'created';
   const randomBrowse = useCombineStore((state) => state.appData.randomBrowse);
-  const [showSidebar, setShowSidebar] = useState<'normal' | 'hide' | 'show'>(Platform.isMobile ? 'hide' : 'normal');
-  const [sortType, setSortType] = useState<SortType>(initialSortType || 'created');
+  const { showSidebar, setShowSidebar, colCount } = useDashboardLayout(dashboardRef);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const notesPerPage = 10; // 每页显示的笔记数量
-  const [colCount, setColCount] = useState(1);
 
   const [refreshFlag, setRefreshFlag] = useState(0);
 
@@ -114,6 +123,10 @@ const CardDashboardView = ({ plugin }: { plugin: BanyanPlugin }) => {
       watcher.dispose();
     };
   }, [app]);
+
+  const handleRefresh = useCallback(() => {
+    setRefreshFlag(f => f + 1);
+  }, []);
 
   useEffect(() => {
     const requestFiles = async () => {
@@ -141,62 +154,7 @@ const CardDashboardView = ({ plugin }: { plugin: BanyanPlugin }) => {
     setCurrentPage(prevPage => prevPage + 1);
   }, [isLoading]);
 
-  const observer = useRef<IntersectionObserver>(null);
-  const lastCardElementRef = useCallback((node: HTMLElement | null) => {
-    if (isLoading) return;
-    if (observer.current) observer.current.disconnect();
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting) {
-        loadMoreNotes();
-      }
-    });
-    if (node) observer.current.observe(node);
-  }, [isLoading, loadMoreNotes]);
-
-  const updateLayout = useCallback((width?: number) => {
-    if (Platform.isMobile) {
-      setShowSidebar('hide');
-      setColCount(1);
-      return;
-    }
-
-    const containerWidth = width ?? dashboardRef.current?.clientWidth ?? 0;
-    if (containerWidth === 0) return;
-
-    const _showSidebar = containerWidth >= 920 ? 'normal' : 'hide';
-    setShowSidebar(_showSidebar);
-
-    if (cardsColumns == 1) {
-      setColCount(1);
-      return;
-    }
-
-    const mainWidth = containerWidth - (_showSidebar == 'normal' ? 400 : 0);
-    const cardWidth = 620;
-    const cardsPadding = 24;
-    const widthFor2Cols = cardWidth + cardsPadding + cardWidth;
-    const cnt = mainWidth >= widthFor2Cols ? 2 : 1;
-    setColCount(cnt);
-  }, [cardsColumns]);
-
-  useEffect(() => {
-    // 初始计算
-    requestAnimationFrame(() => updateLayout());
-
-    const resizeObserver = new ResizeObserver((entries) => {
-      if (!Array.isArray(entries) || !entries.length) return;
-      const entry = entries[0];
-      const containerWidth = entry.contentRect.width;
-
-      requestAnimationFrame(() => updateLayout(containerWidth));
-    });
-
-    if (dashboardRef.current) {
-      resizeObserver.observe(dashboardRef.current);
-    }
-
-    return () => resizeObserver.disconnect();
-  }, [updateLayout]);
+  const lastCardElementRef = useInfiniteScroll(isLoading, loadMoreNotes);
 
   const handleBatchImportToView = () => {
     const modal = new ViewSelectModal(app, {
@@ -224,13 +182,6 @@ const CardDashboardView = ({ plugin }: { plugin: BanyanPlugin }) => {
   }), [displayFiles, curScheme.pinned, lastCardElementRef, useCardNote2]);
 
   // 瀑布流布局
-  const getColumns = (cards: React.JSX.Element[], colCount: number) => {
-    const cols: React.JSX.Element[][] = Array.from({ length: colCount }, () => []);
-    cards.forEach((card, idx) => {
-      cols[idx % colCount].push(card);
-    });
-    return cols;
-  };
   const columns = useMemo(() => getColumns(cardNodes, colCount), [cardNodes, colCount]);
 
   return (
@@ -245,15 +196,14 @@ const CardDashboardView = ({ plugin }: { plugin: BanyanPlugin }) => {
           filterSchemes={filterSchemes}
           setCurScheme={setCurScheme}
         />
-        {!Platform.isMobile && <div className="main-header-add-note-container"><AddNoteView app={app} plugin={plugin} onAdd={() => setRefreshFlag(f => f + 1)} /></div>}
+        {!Platform.isMobile && <div className="main-header-add-note-container"><AddNoteView app={app} plugin={plugin} onAdd={handleRefresh} /></div>}
         <div className="main-subheader-container">
           <div className="main-subheader-info">
-            <div className="refresh-btn"
-              children={<Icon name="refresh-ccw" />}
-              onClick={() => setRefreshFlag(f => f + 1)}
-            />
+            <div className="refresh-btn" onClick={handleRefresh}>
+              <Icon name="refresh-ccw" />
+            </div>
             <span className="main-subheader-loaded-notes">{i18n.t('loaded_notes', { count: `${displayFiles.length}`, total: `${curSchemeNotesLength}` })}</span>
-            {cardNodes.length > 0 && <SortFilesButton plugin={plugin} sortType={sortType} setSortType={setSortType} />}
+            {cardNodes.length > 0 && <SortFilesButton />}
           </div>
           <div className="main-subheader-btn-section">
             {curScheme.type != 'ViewScheme' && curScheme.id != DefaultFilterSchemeID && cardNodes.length > 0 && <button className="clickable-icon batch-add-button" onClick={handleBatchImportToView}>{i18n.t('batch_add_to_view')}</button>}
@@ -287,53 +237,5 @@ const CardDashboardView = ({ plugin }: { plugin: BanyanPlugin }) => {
         )}
       </div>
     </div>
-  );
-}
-
-const SortFilesButton = ({ plugin, sortType, setSortType }: { plugin: BanyanPlugin, sortType: SortType, setSortType: (st: SortType) => void }) => {
-  const updateSortType = useCombineStore((state) => state.updateSortType);
-
-  const sortMenu = (event: MouseEvent) => {
-    const sortMenu = new Menu();
-    sortMenu.addItem((item) => {
-      item.setTitle(i18n.t('recently_created'));
-      item.setChecked(sortType === 'created');
-      item.onClick(() => {
-        setSortType('created');
-        updateSortType('created');
-      });
-    });
-    sortMenu.addItem((item) => {
-      item.setTitle(i18n.t('recently_updated'));
-      item.setChecked(sortType === 'modified');
-      item.onClick(() => {
-        setSortType('modified');
-        updateSortType('modified');
-      });
-    });
-    sortMenu.addItem((item) => {
-      item.setTitle(i18n.t('earliest_created'));
-      item.setChecked(sortType === 'earliestCreated');
-      item.onClick(() => {
-        setSortType('earliestCreated');
-        updateSortType('earliestCreated');
-      });
-    });
-    sortMenu.addItem((item) => {
-      item.setTitle(i18n.t('earliest_updated'));
-      item.setChecked(sortType === 'earliestModified');
-      item.onClick(() => {
-        setSortType('earliestModified');
-        updateSortType('earliestModified');
-      });
-    });
-    sortMenu.showAtMouseEvent(event);
-  };
-
-  return (
-    <button className="clickable-icon sort-button"
-      children={<Icon name="arrow-down-wide-narrow" />}
-      onClick={(e) => sortMenu(e.nativeEvent)}
-    />
   );
 }
