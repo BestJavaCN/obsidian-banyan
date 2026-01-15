@@ -32,8 +32,8 @@ export const useRandomReviewStore: StateCreator<CombineState, [], [], RandomRevi
     updateRandomReviewFilterList: (filters: RandomReviewFilter[]) => {
         const plugin = get().plugin;
         plugin.resetRandomReview();
-        
-        get().updateSettings({ randomReviewFilters: filters });
+
+        get().updateAppData({ randomReviewFilters: filters });
         set({ randomReviewFilters: filters });
 
         plugin.setupRandomReview();

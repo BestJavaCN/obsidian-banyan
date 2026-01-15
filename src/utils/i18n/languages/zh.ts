@@ -62,6 +62,7 @@ export default {
     setting_header_basic: "⚙️ 基础设置",
     setting_header_cards: "🗂 卡片视图",
     setting_header_editor: "✏️ 新建笔记",
+    setting_header_clean: "⚠️ 旧版数据清理",
 
     setting_note_directory_name: "笔记目录",
     setting_note_directory_desc1: "「卡片面板」只会管理该目录下的所有笔记。",
@@ -95,6 +96,13 @@ export default {
     setting_show_add_note_ribbon_name: "在功能区显示创建笔记按钮",
     setting_show_add_note_ribbon_desc: "启用后，会在Obsidian的功能区显示创建笔记的按钮。",
 
+    setting_new_note_location_name: "新建笔记存放位置",
+    setting_new_note_location_desc: "笔记默认将按“年/季度/月/日”的路径格式存放，也可以自定义存放路径。",
+    setting_new_note_location_current: "默认",
+    setting_new_note_location_custom: "自定义",
+    setting_custom_new_note_location_name: "自定义存放路径",
+    setting_custom_new_note_location_desc: "路径为空时使用「笔记目录」。注意，若路径设置在「笔记目录」之外，卡片面板将无法显示新建笔记。",
+
     setting_card_content_max_height_name: "内容最大高度",
     setting_card_content_max_height_desc: "内容区(不包括标题)的最大显示高度，内容过长时折叠。",
     setting_card_content_max_height_short: "较短",
@@ -108,20 +116,29 @@ export default {
     setting_font_theme_normal: "一般",
 
     // 迁移：属性title -> 文件名
-    setting_migrate_title_to_filename_name: "迁移属性标题为文件名",
-    setting_migrate_title_to_filename_desc: "扫描「笔记目录」中含有属性含有“title”的笔记，将其作为文件名，并删除该属性。",
-    setting_migrate_title_to_filename_btn: "开始迁移",
+    setting_migrate_title_to_filename_name: "将属性标题为文件名",
+    setting_migrate_title_to_filename_desc: "在早前版本中，笔记的属性标题会作为文件名。现在去掉了这个逻辑。扫描「笔记目录」中含有属性含有“title”的笔记，将其作为文件名，并删除该属性。",
+    setting_migrate_title_to_filename_btn: "开始更改",
 
     // 新迁移弹窗
-    migrate_modal_title: "迁移属性标题到文件名",
+    migrate_modal_title: "将属性标题为文件名",
     migrate_modal_desc: "以防万一，建议先备份笔记。",
     migrate_select_all: "全选/全不选",
     migrate_selected_count: "已选择 {{count}} / {{total}}",
     migrate_start: "开始",
     migrate_close: "关闭",
     migrate_progress: "进度：完成 {{done}} / {{total}} 条，成功 {{success}} 条。",
-    migrate_empty_list: "没有需要迁移的笔记。",
+    migrate_empty_list: "没有需要更改的笔记。",
     migrate_rescan: "重新检测",
+
+    // remove id modal
+    setting_remove_id_name: "移除属性中的ID",
+    setting_remove_id_desc: "在早前版本中，ID属性作为唯一标识符。现在我们用文件路径代替了它。扫描所有含有“id”属性的笔记，并删除该属性。",
+    setting_remove_id_btn: "开始移除",
+    remove_id_modal_title: "移除 FrontMatter ID",
+    remove_id_modal_desc: "选择要移除ID的笔记。建议先备份笔记以防万一。",
+    remove_id_start: "开始移除",
+    remove_id_empty_list: "没有找到含有ID的笔记。",
 
     /* 命令和ribbon */
     add_card_note: "添加卡片笔记",

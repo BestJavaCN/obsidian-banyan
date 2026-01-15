@@ -3,8 +3,9 @@ import BanyanPlugin from './main';
 import { i18n } from './utils/i18n';
 import FolderSuggest from './components/FolderSuggest';
 import { useCombineStore } from './store';
-import { CardContentMaxHeightType, FontTheme } from './models/Enum';
+import { CardContentMaxHeightType, FontTheme, NewNoteLocationMode } from './models/Enum';
 import { openMigrateTitleModal } from './components/MigrateTitleModal';
+import { openRemoveIdModal } from './components/RemoveIdModal';
 
 export class BanyanSettingTab extends PluginSettingTab {
 	plugin: BanyanPlugin;
@@ -20,26 +21,30 @@ export class BanyanSettingTab extends PluginSettingTab {
 		// 基础设置
 		new Setting(containerEl).setName(i18n.t('setting_header_basic')).setHeading();
 		this.setupCardsDirectorySetting(containerEl);
-		this.setupOpenWhenStartObsidianSetting(containerEl);		
+		this.setupOpenWhenStartObsidianSetting(containerEl);
 		this.setupCardsColumnsSetting(containerEl);
 
 		// 卡片视图
 		new Setting(containerEl).setName(i18n.t('setting_header_cards')).setHeading();
 		this.setupTitleDisplayModeSetting(containerEl);
-		this.setupFontThemeSetting(containerEl);		
+		this.setupFontThemeSetting(containerEl);
 		this.setupCardContentMaxHeightSetting(containerEl);
 		this.setupShowBacklinksSetting(containerEl);
 		this.setupUseCardNote2Setting(containerEl);
 
 		// 编辑
 		new Setting(containerEl).setName(i18n.t('setting_header_editor')).setHeading();
+		this.setupNewNoteLocationSetting(containerEl);
 		this.setupUseZkPrefixerFormatSetting(containerEl);
 		this.setupShowAddNoteRibbonSetting(containerEl);
+
+		// 旧版清理
+		new Setting(containerEl).setName(i18n.t('setting_header_clean')).setHeading();
 		this.setupMigrateTitleToFilenameSetting(containerEl);
 	}
 
 	setupCardsDirectorySetting(containerEl: HTMLElement) {
-		const dateDesc = document.createDocumentFragment();  
+		const dateDesc = document.createDocumentFragment();
 		dateDesc.appendText(i18n.t('setting_note_directory_desc1'));
 		dateDesc.createEl('br');
 		dateDesc.appendText(i18n.t('setting_note_directory_desc2'));
@@ -60,7 +65,7 @@ export class BanyanSettingTab extends PluginSettingTab {
 					});
 				setTimeout(() => {
 					text.inputEl.blur(); // 防止打开设置面板时输入框自动聚焦
-				}, 0);				
+				}, 0);
 			});
 	}
 
@@ -134,32 +139,70 @@ export class BanyanSettingTab extends PluginSettingTab {
 	}
 
 	setupUseZkPrefixerFormatSetting(containerEl: HTMLElement) {
-		const settings = this.plugin.settings;
+		const settings = useCombineStore.getState().settings;
 		new Setting(containerEl)
 			.setName(i18n.t('setting_use_zk_prefixer_format_name'))
 			.setDesc(i18n.t('setting_use_zk_prefixer_format_desc'))
 			.addToggle(toggle => {
 				toggle.setValue(settings.useZkPrefixerFormat ?? true)
 					.onChange(async (value) => {
-						this.plugin.settings.useZkPrefixerFormat = value;
-						await this.plugin.saveSettings();
+						useCombineStore.getState().updateUseZkPrefixerFormat(value);
 					});
 			});
 	}
 
 	setupShowAddNoteRibbonSetting(containerEl: HTMLElement) {
-		const settings = this.plugin.settings;
+		const settings = useCombineStore.getState().settings;
 		new Setting(containerEl)
 			.setName(i18n.t('setting_show_add_note_ribbon_name'))
 			.setDesc(i18n.t('setting_show_add_note_ribbon_desc'))
 			.addToggle(toggle => {
 				toggle.setValue(settings.showAddNoteRibbonIcon ?? true)
 					.onChange(async (value) => {
-						this.plugin.settings.showAddNoteRibbonIcon = value;
-						await this.plugin.saveSettings();
+						useCombineStore.getState().updateShowAddNoteRibbonIcon(value);
 						// 重新设置功能区图标
 						this.plugin.setupCreateNoteRibbonBtn();
 					});
+			});
+	}
+
+	setupNewNoteLocationSetting(containerEl: HTMLElement) {
+		const settings = useCombineStore.getState().settings;
+		new Setting(containerEl)
+			.setName(i18n.t('setting_new_note_location_name'))
+			.setDesc(i18n.t('setting_new_note_location_desc'))
+			.addDropdown(dropdown => {
+				dropdown.addOption('current', i18n.t('setting_new_note_location_current'))
+					.addOption('custom', i18n.t('setting_new_note_location_custom'))
+					.setValue(settings.newNoteLocationMode ?? 'current')
+					.onChange(async (value) => {
+						useCombineStore.getState().updateNewNoteLocationMode(value as NewNoteLocationMode);
+						this.display(); // 刷新以显示/隐藏自定义路径设置
+					});
+			});
+
+		if (settings.newNoteLocationMode === 'custom') {
+			this.setupCustomNewNoteLocationSetting(containerEl);
+		}
+	}
+
+	setupCustomNewNoteLocationSetting(containerEl: HTMLElement) {
+		const settings = useCombineStore.getState().settings;
+		new Setting(containerEl)
+			.setName(i18n.t('setting_custom_new_note_location_name'))
+			.setDesc(i18n.t('setting_custom_new_note_location_desc'))
+			.addText(async text => {
+				new FolderSuggest(this.app, text.inputEl, async (value) => {
+					text.setValue(value);
+					useCombineStore.getState().updateCustomNewNoteLocation(value);
+				});
+				text.setValue(settings.customNewNoteLocation || "")
+					.onChange(async (value) => {
+						useCombineStore.getState().updateCustomNewNoteLocation(value);
+					});
+				setTimeout(() => {
+					text.inputEl.blur();
+				}, 0);
 			});
 	}
 
@@ -197,15 +240,24 @@ export class BanyanSettingTab extends PluginSettingTab {
 	}
 
 	setupMigrateTitleToFilenameSetting(containerEl: HTMLElement) {
-        new Setting(containerEl)
-            .setName(i18n.t('setting_migrate_title_to_filename_name'))
-            .setDesc(i18n.t('setting_migrate_title_to_filename_desc'))
-            .addButton(btn => {
-                btn.setButtonText(i18n.t('setting_migrate_title_to_filename_btn'))
-                    .onClick(async () => {
-                        openMigrateTitleModal({ app: this.app, plugin: this.plugin });
-                    });
-            });
+		new Setting(containerEl)
+			.setName(i18n.t('setting_migrate_title_to_filename_name'))
+			.setDesc(i18n.t('setting_migrate_title_to_filename_desc'))
+			.addButton(btn => {
+				btn.setButtonText(i18n.t('setting_migrate_title_to_filename_btn'))
+					.onClick(async () => {
+						openMigrateTitleModal({ app: this.app, plugin: this.plugin });
+					});
+			});
+		new Setting(containerEl)
+			.setName(i18n.t('setting_remove_id_name'))
+			.setDesc(i18n.t('setting_remove_id_desc'))
+			.addButton(btn => {
+				btn.setButtonText(i18n.t('setting_remove_id_btn'))
+					.onClick(async () => {
+						openRemoveIdModal({ app: this.app, plugin: this.plugin });
+					});
+			});
 	}
 
 }

@@ -1,15 +1,18 @@
 import { BanyanPluginSettings } from "src/BanyanPluginSettings";
 import { StateCreator } from "zustand";
 import { CombineState } from ".";
-import { CardContentMaxHeightType, SortType, TitleDisplayMode, FontTheme } from "src/models/Enum";
+import { CardContentMaxHeightType, SortType, TitleDisplayMode, FontTheme, NewNoteLocationMode } from "src/models/Enum";
+import { BanyanAppData } from "src/BanyanAppData";
 import moment from "moment";
 
 export interface SettingsState {
     settings: BanyanPluginSettings;
+    appData: BanyanAppData;
 
     // 设置更新方法
     updateSettings: (settings: Partial<BanyanPluginSettings>) => void;
-    
+    updateAppData: (appData: Partial<BanyanAppData>) => void;
+
     // 单个设置项的更新方法
     updateCardsDirectory: (directory: string) => void;
     updateOpenWhenStartObsidian: (open: boolean) => void;
@@ -18,11 +21,15 @@ export interface SettingsState {
     updateSortType: (sortType: SortType) => void;
     updateFirstUseDate: (date: string) => void;
     updateShowBacklinksInCardNote: (show: boolean) => void;
-    updateUseCardNote2: (use: boolean) => void; // 新增
-    updateRandomBrowse: (randomBrowse: boolean) => void; // 新增：乱序浏览开关
+    updateUseCardNote2: (use: boolean) => void;
+    updateRandomBrowse: (randomBrowse: boolean) => void;
+    updateUseZkPrefixerFormat: (use: boolean) => void;
+    updateShowAddNoteRibbonIcon: (show: boolean) => void;
     updateCardContentMaxHeight: (height: CardContentMaxHeightType) => void; // 新增：卡片内容最大高度
-    updateFontTheme: (theme: FontTheme) => void; // 新增：字体大小主题
-    
+    updateFontTheme: (theme: FontTheme) => void;
+    updateNewNoteLocationMode: (mode: NewNoteLocationMode) => void;
+    updateCustomNewNoteLocation: (directory: string) => void;
+
     // UI state updates
     updateFilterSchemesExpanded: (expanded: boolean) => void;
     updateRandomReviewExpanded: (expanded: boolean) => void;
@@ -34,13 +41,28 @@ export interface SettingsState {
 
 export const useSettingsStore: StateCreator<CombineState, [], [], SettingsState> = (set, get) => ({
     settings: {} as BanyanPluginSettings,
+    appData: {} as BanyanAppData,
 
     updateSettings: (newSettings: Partial<BanyanPluginSettings>) => {
         const plugin = get().plugin;
-        const updatedSettings = { ...plugin.settings, ...newSettings };
-        plugin.settings = updatedSettings;
+        const updatedSettings = { ...get().settings, ...newSettings };
+        plugin.settings = { ...updatedSettings }; // Sync back to plugin
         plugin.saveSettings();
         set({ settings: updatedSettings });
+    },
+
+    updateAppData: (newAppData: Partial<BanyanAppData>) => {
+        const plugin = get().plugin;
+        const updatedAppData = { ...get().appData, ...newAppData };
+        plugin.appData = { ...updatedAppData }; // Sync back to plugin
+        plugin.saveAppData();
+
+        const newState: Partial<CombineState> = { appData: updatedAppData };
+        if (newAppData.viewSchemes) newState.viewSchemes = newAppData.viewSchemes;
+        if (newAppData.filterSchemes) newState.filterSchemes = newAppData.filterSchemes;
+        if (newAppData.randomReviewFilters) newState.randomReviewFilters = newAppData.randomReviewFilters;
+
+        set(newState);
     },
 
     updateCardsDirectory: (directory: string) => {
@@ -60,11 +82,11 @@ export const useSettingsStore: StateCreator<CombineState, [], [], SettingsState>
     },
 
     updateSortType: (sortType: SortType) => {
-        get().updateSettings({ sortType });
+        get().updateAppData({ sortType });
     },
 
     updateFirstUseDate: (date: string) => {
-        get().updateSettings({ firstUseDate: date });
+        get().updateAppData({ firstUseDate: date });
     },
 
     updateShowBacklinksInCardNote: (show: boolean) => {
@@ -74,7 +96,13 @@ export const useSettingsStore: StateCreator<CombineState, [], [], SettingsState>
         get().updateSettings({ useCardNote2: use });
     },
     updateRandomBrowse: (randomBrowse: boolean) => {
-        get().updateSettings({ randomBrowse });
+        get().updateAppData({ randomBrowse });
+    },
+    updateUseZkPrefixerFormat: (use: boolean) => {
+        get().updateSettings({ useZkPrefixerFormat: use });
+    },
+    updateShowAddNoteRibbonIcon: (show: boolean) => {
+        get().updateSettings({ showAddNoteRibbonIcon: show });
     },
     updateCardContentMaxHeight: (height: CardContentMaxHeightType) => {
         get().updateSettings({ cardContentMaxHeight: height });
@@ -82,16 +110,22 @@ export const useSettingsStore: StateCreator<CombineState, [], [], SettingsState>
     updateFontTheme: (theme: FontTheme) => {
         get().updateSettings({ fontTheme: theme });
     },
-    
+    updateNewNoteLocationMode: (mode: NewNoteLocationMode) => {
+        get().updateSettings({ newNoteLocationMode: mode });
+    },
+    updateCustomNewNoteLocation: (directory: string) => {
+        get().updateSettings({ customNewNoteLocation: directory });
+    },
+
     // UI state updates
     updateFilterSchemesExpanded: (expanded: boolean) => {
-        get().updateSettings({ filterSchemesExpanded: expanded });
+        get().updateAppData({ filterSchemesExpanded: expanded });
     },
     updateRandomReviewExpanded: (expanded: boolean) => {
-        get().updateSettings({ randomReviewExpanded: expanded });
+        get().updateAppData({ randomReviewExpanded: expanded });
     },
     updateViewSchemesExpanded: (expanded: boolean) => {
-        get().updateSettings({ viewSchemesExpanded: expanded });
+        get().updateAppData({ viewSchemesExpanded: expanded });
     },
 
     shouldShowTitle: (basename: string) => {

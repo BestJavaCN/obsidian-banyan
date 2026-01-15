@@ -1,14 +1,16 @@
 import { Plugin, WorkspaceLeaf } from 'obsidian';
 import { BanyanPluginSettings, DEFAULT_SETTINGS, CUR_SETTINGS_VERSION } from './BanyanPluginSettings';
+import { BanyanAppData, DEFAULT_APP_DATA, CUR_APP_DATA_VERSION } from './BanyanAppData';
 import { CARD_DASHBOARD_VIEW_TYPE, CardDashboard } from './pages/CardDashboard';
 import { BanyanSettingTab } from './BanyanSettingTab';
 import { FileUtils } from './utils/fileUtils';
 import { i18n } from './utils/i18n';
 import { TagFilter } from './models/TagFilter';
-import { ensureFileID } from './models/FileInfo';
+
 
 export default class BanyanPlugin extends Plugin {
 	settings: BanyanPluginSettings;
+	appData: BanyanAppData;
 	fileUtils: FileUtils;
 
 	async onload() {
@@ -68,9 +70,9 @@ export default class BanyanPlugin extends Plugin {
 	}
 
 	public openSettingsPanel(): void {
-        (this.app as any).setting.open();
-        (this.app as any).setting.openTabById(this.manifest.id);
-    }
+		(this.app as any).setting.open();
+		(this.app as any).setting.openTabById(this.manifest.id);
+	}
 
 	randomRibbonIcons: HTMLElement[] = [];
 	addNoteRibbonIcon: HTMLElement | null = null;
@@ -94,7 +96,7 @@ export default class BanyanPlugin extends Plugin {
 			ele.remove();
 		});
 		this.randomRibbonIcons = [];
-		this.settings.randomReviewFilters.forEach((filter) => {
+		this.appData.randomReviewFilters.forEach((filter) => {
 			this.removeCommand(`open-random-note-${filter.id}`);
 		});
 	}
@@ -103,7 +105,7 @@ export default class BanyanPlugin extends Plugin {
 		const icons = ['dice', 'shuffle', 'dices', 'dice-6',
 			'dice-5', 'dice-4', 'dice-3', 'dice-2', 'dice-1'];
 		this.randomRibbonIcons = [];
-		this.settings.randomReviewFilters.forEach((filter) => {	
+		this.appData.randomReviewFilters.forEach((filter) => {
 			const name = `${i18n.t('open_random_note')} - ${filter.name}`;
 			const icon = icons[filter.id % icons.length];
 			this.addCommand({
@@ -128,18 +130,18 @@ export default class BanyanPlugin extends Plugin {
 			const getNewFilterIfNeeded = (tf: TagFilter) => {
 				return tf.noTag !== undefined ? tf : { ...tf, notag: 'unlimited' };
 			};
-			this.settings.filterSchemes = [...this.settings.filterSchemes.map((scheme) => {
+			this.appData.filterSchemes = [...this.appData.filterSchemes.map((scheme) => {
 				return { ...scheme, tagFilter: getNewFilterIfNeeded(scheme.tagFilter) };
 			})];
 		};
 		if (this.settings.settingsVersion < 3) {
-			this.settings.filterSchemes = [...this.settings.filterSchemes.map((scheme) => {
+			this.appData.filterSchemes = [...this.appData.filterSchemes.map((scheme) => {
 				return scheme.parentId === undefined ? { ...scheme, parentId: null } : scheme;
 			})];
 		};
 		if (this.settings.settingsVersion < 4) {
 			// 为现有的随机回顾过滤器添加showInRibbon字段
-			this.settings.randomReviewFilters = [...this.settings.randomReviewFilters.map((filter) => {
+			this.appData.randomReviewFilters = [...this.appData.randomReviewFilters.map((filter) => {
 				return {
 					...filter,
 					showInRibbon: filter.showInRibbon === undefined ? true : filter.showInRibbon
@@ -156,9 +158,9 @@ export default class BanyanPlugin extends Plugin {
 		}
 		if (this.settings.settingsVersion < 6) {
 			this.settings.showAddNoteRibbonIcon = true;
-			this.settings.filterSchemesExpanded = true;
-			this.settings.randomReviewExpanded = true;
-			this.settings.viewSchemesExpanded = true;
+			this.appData.filterSchemesExpanded = true;
+			this.appData.randomReviewExpanded = true;
+			this.appData.viewSchemesExpanded = true;
 			this.settings.fontTheme = 'normal';
 		}
 		if (this.settings.settingsVersion < 7) {
@@ -172,39 +174,93 @@ export default class BanyanPlugin extends Plugin {
 				console.log('旧的占位文件不存在，无需移除', oldPlaceholderFile);
 			}
 		}
+
 		// *** 版本更新时，在以上添加更新逻辑 ***
 		this.settings.settingsVersion = CUR_SETTINGS_VERSION;
-		await this.ensureAllFileID();
+		this.appData.version = CUR_APP_DATA_VERSION;
 		this.updateSavedFile();
 		this.saveSettings();
-	}
-
-	ensureAllFileID = async () => {
-		let cnt = Math.floor(Math.random() * 1000);
-		const allFiles = this.fileUtils.getAllRawFiles();
-		for (const file of allFiles) {
-			await ensureFileID(file, this.app, cnt);
-			cnt = cnt >= 999 ? 1 : cnt + 1;
-		}
+		this.saveAppData();
 	}
 
 	updateSavedFile = () => {
-		const _allFiles = this.fileUtils.getAllFiles().map((f) => f.id);
+		const _allFiles = this.fileUtils.getAllFiles().map((f) => f.file.path);
 		if (_allFiles.length === 0) return; // 防止获取不到文件，却清空数据的情况
 		const allFiles = new Set(_allFiles);
-		this.settings.viewSchemes = [...this.settings.viewSchemes.map((scheme) => {
-			const newFiles = [...scheme.files.filter((file) => allFiles.has(file))];
-			const newPinned = [...scheme.pinned.filter((file) => allFiles.has(file))];
+		this.appData.viewSchemes = [...this.appData.viewSchemes.map((scheme) => {
+			const newFiles = [...scheme.files.filter((path) => allFiles.has(path))];
+			const newPinned = [...scheme.pinned.filter((path) => allFiles.has(path))];
 			return { ...scheme, files: newFiles, pinned: newPinned };
 		})];
-		this.settings.filterSchemes = [...this.settings.filterSchemes.map((scheme) => {
-			const newPinned = [...scheme.pinned.filter((file) => allFiles.has(file))];
+		this.appData.filterSchemes = [...this.appData.filterSchemes.map((scheme) => {
+			const newPinned = [...scheme.pinned.filter((path) => allFiles.has(path))];
 			return { ...scheme, pinned: newPinned };
 		})];
 	}
 
+	async loadAppData(settingsRawData: any) {
+		const adapter = this.app.vault.adapter;
+		const appDataPath = `${this.manifest.dir}/banyan_state.json`;
+
+		// 1. 尝试加载现有 AppData
+		let needsMigration = false;
+		if (await adapter.exists(appDataPath)) {
+			try {
+				const appDataContent = await adapter.read(appDataPath);
+				const appDataRaw = JSON.parse(appDataContent);
+				this.appData = Object.assign({}, DEFAULT_APP_DATA, appDataRaw);
+				// 如果没有版本号，视为需要从 settings 迁移或补全
+				if (appDataRaw.version === undefined) needsMigration = true;
+			} catch (e) {
+				console.error('解析 AppData 失败，将重新初始化', e);
+				this.appData = Object.assign({}, DEFAULT_APP_DATA);
+				needsMigration = true;
+			}
+		} else {
+			this.appData = Object.assign({}, DEFAULT_APP_DATA);
+			needsMigration = true;
+		}
+
+		// 2. 执行从 Settings 到 AppData 的迁移逻辑
+		if (needsMigration && settingsRawData) {
+			const keysToMigrate = [
+				'sortType', 'firstUseDate', 'randomBrowse', 'randomReviewFilters',
+				'filterSchemes', 'viewSchemes', 'filterSchemesExpanded',
+				'randomReviewExpanded', 'viewSchemesExpanded'
+			];
+
+			let migrated = false;
+			keysToMigrate.forEach(key => {
+				if (key in settingsRawData) {
+					(this.appData as any)[key] = settingsRawData[key];
+					delete (this.settings as any)[key];
+					migrated = true;
+				}
+			});
+
+			if (migrated) {
+				console.log('Detected legacy settings, migrated to appData');
+				this.appData.version = CUR_APP_DATA_VERSION;
+				await this.saveAppData();
+				await this.saveSettings();
+			}
+		}
+	}
+
+	async saveAppData() {
+		const adapter = this.app.vault.adapter;
+		const path = `${this.manifest.dir}/banyan_state.json`;
+		await adapter.write(path, JSON.stringify(this.appData, null, 2));
+	}
+
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		const data = await this.loadData();
+
+		// 1. 加载基础设置
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, data);
+
+		// 2. 加载并检查迁移 AppData
+		await this.loadAppData(data);
 	}
 
 	async saveSettings() {

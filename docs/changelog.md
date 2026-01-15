@@ -1,5 +1,22 @@
 ### Changelog
 
+### 1.4.0
+
+⚠️ **Breaking Change**
+
+**Removed the use of IDs in the frontmatter**; a new one-click "Delete all IDs" feature has been added to the settings.
+Please note that "Pinned Records" from older versions will be cleared during this update. Rest assured, this plugin will never delete your notes! If these records are important to you, please take note of them beforehand—for example, by creating an index file of notes you wish to pin—so you can manually re-assign them after the upgrade.
+
+Improvements
+
+- Independent Scrolling: The sidebar and the main content area can now scroll independently.
+- Custom Storage: You can now customize the default storage directory for newly created notes.
+
+Fixes
+
+- Date Filtering: Fixed an issue where notes under the date filter did not correctly align with their creation or update times.
+- Mode Switching: Fixed an issue where notes in "edit-in-place" mode failed to revert to reading mode when switching between different notes.
+
 ### 1.3.5
 
 Improvements

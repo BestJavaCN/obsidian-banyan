@@ -1,6 +1,6 @@
 import { App, TFile, normalizePath, Notice } from "obsidian";
 import BanyanPlugin from "src/main";
-import { createFileInfo, FileInfo, generateFileId } from "src/models/FileInfo";
+import { createFileInfo, FileInfo } from "src/models/FileInfo";
 import { TagFilter, isOKWithTagFilter } from "src/models/TagFilter";
 import { i18n } from "./i18n";
 import moment from "moment";
@@ -116,16 +116,23 @@ export class FileUtils {
   }
 
   private async getNewNoteFilePath(title?: string) {
-    const now = new Date();
-    const year = now.getFullYear().toString();
-    const quarter = Math.floor((now.getMonth() + 3) / 3).toString();
-    const month = (now.getMonth() + 1).toString().padStart(2, '0').toString();
-    const day = now.getDate().toString().padStart(2, '0').toString();
-    const folderPath = `${this.dir}/${i18n.t('create_note_folder_path', { year, quarter, month, day })}`;
+
+    let folderPath: string;
+    if (this.plugin.settings.newNoteLocationMode === 'custom') {
+      folderPath = this.plugin.settings.customNewNoteLocation || this.dir;
+    } else {
+      const now = new Date();
+      const year = now.getFullYear().toString();
+      const quarter = Math.floor((now.getMonth() + 3) / 3).toString();
+      const month = (now.getMonth() + 1).toString().padStart(2, '0').toString();
+      const day = now.getDate().toString().padStart(2, '0').toString();
+      folderPath = `${this.dir}/${i18n.t('create_note_folder_path', { year, quarter, month, day })}`;
+    }
+
     await this.ensureDirectoryExists(folderPath);
     const formatStr = this.getZkPrefixerFormat();
     let fileName: string = "";
-    
+
     // 如果有标题且标题合法，使用标题作为文件名
     if (title && title.trim() && legalFileName(title.trim())) {
       fileName = `${title.trim()}.md`;
@@ -137,10 +144,10 @@ export class FileUtils {
       } else {
         // 不赋值filename，则会使用默认格式
         new Notice(i18n.t('illegal_unique_prefix_format'));
-        console.log("formated illegal:", formatStr);        
+        console.log("formated illegal:", formatStr);
       }
     }
-    
+
     if (fileName === "") {
       const defaultFormatStr = "YYYY-MM-DD HH-mm-ss";
       fileName = `${moment().format(defaultFormatStr)}.md`;
@@ -171,7 +178,7 @@ export class FileUtils {
     }
 
     // 随机选择一个笔记
-    const randomIndex = getRandomNumber(filteredFiles.length-1);
+    const randomIndex = getRandomNumber(filteredFiles.length - 1);
     const randomFile = filteredFiles[randomIndex];
 
     // 打开笔记
@@ -186,9 +193,7 @@ export class FileUtils {
     const file = await this.app.vault.create(filePath, content ?? '');
 
     await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
-      const id = generateFileId((new Date()).getTime());
-      frontmatter.tags = tags; 
-      frontmatter.id = id;
+      frontmatter.tags = tags;
     });
 
     if (!open) return;
@@ -292,6 +297,42 @@ export class FileUtils {
         onProgress && onProgress(originalPath, newFile, true);
       } catch (e) {
         console.error('迁移失败', file.path, e);
+        onProgress && onProgress(file.path, file, false);
+      }
+    }
+    return { success, total: list.length };
+  }
+  //#endregion
+
+  //#region 移除：FrontMatter.id
+  getFilesWithFrontmatterId(): { file: TFile; id: any }[] {
+    const res: { file: TFile; id: any }[] = [];
+    const files = this.getAllRawFiles();
+    for (const file of files) {
+      const cache = this.app.metadataCache.getFileCache(file);
+      const id = (cache as any)?.frontmatter?.id;
+      if (id !== undefined) {
+        res.push({ file, id });
+      }
+    }
+    return res;
+  }
+
+  async removeFrontmatterId(targets?: { file: TFile }[], onProgress?: (originalPath: string, file: TFile, ok: boolean) => void) {
+    const list = targets ?? this.getFilesWithFrontmatterId();
+    let success = 0;
+    for (const { file } of list) {
+      try {
+        const originalMtime = file.stat.mtime;
+        const originalCtime = file.stat.ctime;
+        const originalPath = file.path;
+        await this.app.fileManager.processFrontMatter(file, (fm) => {
+          if (fm.id !== undefined) delete fm.id;
+        }, { mtime: originalMtime, ctime: originalCtime });
+        success += 1;
+        onProgress && onProgress(originalPath, file, true);
+      } catch (e) {
+        console.error('移除ID失败', file.path, e);
         onProgress && onProgress(file.path, file, false);
       }
     }

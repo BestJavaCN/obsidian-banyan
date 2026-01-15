@@ -9,44 +9,58 @@ import CardNoteBacklinksView from "./CardNoteBacklinksView";
 
 const NoteContentView = ({ app, fileInfo }: { app: App, fileInfo: FileInfo }) => {
   const ref = React.useRef<HTMLDivElement>(null);
-  const leaf = new (WorkspaceLeaf as any)(app);
+  const leaf = React.useRef<any>(null);
+  if (!leaf.current) leaf.current = new (WorkspaceLeaf as any)(app);
   const [overflow, setOverflow] = React.useState(false);
   const [isExpanded, setIsExpanded] = React.useState(false);
-  const settings = useCombineStore((state) => state.settings);
+  const cardContentMaxHeight = useCombineStore((state) => state.settings.cardContentMaxHeight);
+  const fontTheme = useCombineStore((state) => state.settings.fontTheme);
 
   React.useEffect(() => {
     const setupView = async () => {
       if (!ref.current) return;
       try {
-        await (leaf as WorkspaceLeaf).openFile(fileInfo.file);
-        if (!(leaf.view instanceof MarkdownView)) {
+        await (leaf.current as WorkspaceLeaf).openFile(fileInfo.file);
+        if (!(leaf.current.view instanceof MarkdownView)) {
           console.log('视图初始化失败或类型不正确', fileInfo.file.name);
           return;
         }
-        await leaf.view.setState(
-          { ...leaf.view.getState(), mode: 'preview' },
+        await leaf.current.view.setState(
+          { ...leaf.current.view.getState(), mode: 'preview' },
           { history: false })
         ref.current?.empty();
-        ref.current?.appendChild(leaf.containerEl);
+        ref.current?.appendChild(leaf.current.containerEl);
       } catch (e) { console.log('打开文件失败', e, fileInfo) };
     };
     setupView();
   }, [fileInfo.file.path]);
 
+  // Cleanup leaf on unmount
+  React.useEffect(() => {
+    return () => {
+      if (leaf.current) {
+        leaf.current.detach();
+        leaf.current = null;
+      }
+    }
+  }, []);
+
   React.useEffect(() => {
     const observer = new ResizeObserver(() => {
-      const ele = ref.current?.querySelector('.view-content');
-      if (ele) {
-        const maxHeight = settings.cardContentMaxHeight === 'expand' ? Infinity : 
-                         settings.cardContentMaxHeight === 'short' ? 160 : 300;
-        setOverflow(ele.scrollHeight > maxHeight);
-      }
+      window.requestAnimationFrame(() => {
+        const ele = ref.current?.querySelector('.view-content');
+        if (ele) {
+          const maxHeight = cardContentMaxHeight === 'expand' ? Infinity :
+            cardContentMaxHeight === 'short' ? 160 : 300;
+          setOverflow(ele.scrollHeight > maxHeight);
+        }
+      });
     });
     if (ref.current) {
       observer.observe(ref.current);
     }
     return () => observer.disconnect();
-  }, [settings.cardContentMaxHeight]);
+  }, [cardContentMaxHeight]);
 
   const handleExpandToggle = () => {
     setIsExpanded(!isExpanded);
@@ -54,37 +68,37 @@ const NoteContentView = ({ app, fileInfo }: { app: App, fileInfo: FileInfo }) =>
 
   const getContentClassName = () => {
     let className = "card-note-content";
-    
+
     if (isExpanded) {
       className += " card-note-content--expanded";
-    } else if (settings.cardContentMaxHeight === 'expand') {
+    } else if (cardContentMaxHeight === 'expand') {
       className += " card-note-content--expand";
-    } else if (settings.cardContentMaxHeight === 'short') {
+    } else if (cardContentMaxHeight === 'short') {
       className += " card-note-content--short";
     } else {
       className += " card-note-content--normal";
     }
-    
-    if (overflow && !isExpanded && settings.cardContentMaxHeight !== 'expand') {
+
+    if (overflow && !isExpanded && cardContentMaxHeight !== 'expand') {
       className += " card-note-content--overflow";
     }
-    
+
     return className;
   };
 
   return (
     <div style={{ position: 'relative' }}>
-      <div ref={ref} className={getContentClassName()} data-font-theme={settings.fontTheme} />
-      {overflow && !isExpanded && settings.cardContentMaxHeight !== 'expand' && (
-        <div 
+      <div ref={ref} className={getContentClassName()} data-font-theme={fontTheme} />
+      {overflow && !isExpanded && cardContentMaxHeight !== 'expand' && (
+        <div
           className="card-note-expand-button"
           onClick={handleExpandToggle}
         >
           {i18n.t('general_expand')}
         </div>
       )}
-      {isExpanded && settings.cardContentMaxHeight !== 'expand' && (
-        <div 
+      {isExpanded && cardContentMaxHeight !== 'expand' && (
+        <div
           className="card-note-expand-button"
           onClick={handleExpandToggle}
         >
@@ -95,14 +109,15 @@ const NoteContentView = ({ app, fileInfo }: { app: App, fileInfo: FileInfo }) =>
   );
 };
 
-const CardNote = ({ fileInfo }: { fileInfo: FileInfo }) => {
+const CardNote = ({ fileInfo, isPinned }: { fileInfo: FileInfo, isPinned: boolean }) => {
 
   const plugin = useCombineStore((state) => state.plugin);
-  const settings = useCombineStore((state) => state.settings);
-  const isPinned = useCombineStore((state) => state.curScheme.pinned.includes(fileInfo.id));
+  const showBacklinksInCardNote = useCombineStore((state) => state.settings.showBacklinksInCardNote);
+  const sortType = useCombineStore((state) => state.appData.sortType);
+  // isPinned passed as prop
   const setCurScheme = useCombineStore((state) => state.setCurScheme);
   const app = plugin.app;
-  const isCreated = settings.sortType === 'created' || settings.sortType === 'earliestCreated';
+  const isCreated = sortType === 'created' || sortType === 'earliestCreated';
   const tags = fileInfo.tags;
   const shouldShowTitle = useCombineStore((state) => state.shouldShowTitle);
 
@@ -123,7 +138,7 @@ const CardNote = ({ fileInfo }: { fileInfo: FileInfo }) => {
         <div className="card-note-time">{isPinned ? `${i18n.t('general_pin')} · ` : ""}{isCreated ? i18n.t('created_at') : i18n.t('updated_at')} {new Date(isCreated ? fileInfo.file.stat.ctime : fileInfo.file.stat.mtime).toLocaleString()}</div>
         {shouldShowTitle(fileInfo.file.basename) && <div className="card-note-title"><h3>{fileInfo.file.basename}</h3></div>}
         {tags.length > 0 && <div className="card-note-tags"> {tags.map((tag) =>
-          <div className="card-note-tag" key={tag} onClick={()=>{
+          <div className="card-note-tag" key={tag} onClick={() => {
             const fs = createEmptySearchFilterScheme();
             fs.tagFilter.or = [[tag]];
             fs.name = '#' + tag;
@@ -138,7 +153,7 @@ const CardNote = ({ fileInfo }: { fileInfo: FileInfo }) => {
       </div>
       <NoteContentView app={app} fileInfo={fileInfo} />
       <div className="card-note-footer">
-        {settings.showBacklinksInCardNote && (
+        {showBacklinksInCardNote && (
           <CardNoteBacklinksView app={app} fileInfo={fileInfo} />
         )}
       </div>

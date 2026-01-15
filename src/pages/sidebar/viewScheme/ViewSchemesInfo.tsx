@@ -20,9 +20,9 @@ export const ViewSchemesInfo = () => {
     const deleteViewScheme = useCombineStore((state) => state.deleteViewScheme);
     const [draggedIndex, setDraggedIndex] = React.useState<number | null>(null);
     const [dragOverIndex, setDragOverIndex] = React.useState<number | null>(null);
-    
+
     // 从设置中获取展开状态
-    const viewSchemesExpanded = useCombineStore((state) => state.settings.viewSchemesExpanded);
+    const viewSchemesExpanded = useCombineStore((state) => state.appData.viewSchemesExpanded);
     const updateViewSchemesExpanded = useCombineStore((state) => state.updateViewSchemesExpanded);
 
     const handleCreateViewScheme = () => {
@@ -102,7 +102,7 @@ export const ViewSchemesInfo = () => {
         setDraggedIndex(null);
         setDragOverIndex(null);
     };
-    
+
     // 切换ViewSchemes的展开/折叠状态
     const toggleViewSchemesExpanded = () => {
         updateViewSchemesExpanded(!viewSchemesExpanded);
@@ -139,10 +139,8 @@ export const ViewSchemesInfo = () => {
                             onDragOver={(e) => handleDragOver(index, e)}
                             onDrop={() => handleDrop(index)}
                             onDragEnd={() => handleDragEnd()}
-                            className={`view-scheme-item ${
-                                draggedIndex === index ? 'view-scheme-item-dragged' : ''
-                                } ${
-                                dragOverIndex === index && draggedIndex !== null ? 'view-scheme-item-dragover' : ''
+                            className={`view-scheme-item ${draggedIndex === index ? 'view-scheme-item-dragged' : ''
+                                } ${dragOverIndex === index && draggedIndex !== null ? 'view-scheme-item-dragover' : ''
                                 }`}>
                             <SidebarButton
                                 label={scheme.name}

@@ -13,7 +13,8 @@ const NoteContentView = ({ app, fileInfo, editMode, endEdit }: { app: App, fileI
   const leaf = React.useRef<any>(null);
   const [overflow, setOverflow] = React.useState(false);
   const [isExpanded, setIsExpanded] = React.useState(false);
-  const settings = useCombineStore((state) => state.settings);
+  const cardContentMaxHeight = useCombineStore((state) => state.settings.cardContentMaxHeight);
+  const fontTheme = useCombineStore((state) => state.settings.fontTheme);
 
   React.useEffect(() => {
     const setupView = async () => {
@@ -35,24 +36,36 @@ const NoteContentView = ({ app, fileInfo, editMode, endEdit }: { app: App, fileI
     setupView();
   }, [fileInfo.file.path, editMode]);
 
+  // Cleanup leaf on unmount
+  React.useEffect(() => {
+    return () => {
+      if (leaf.current) {
+        leaf.current.detach();
+        leaf.current = null;
+      }
+    }
+  }, []);
+
   React.useEffect(() => {
     if (editMode) {
       setOverflow(false);
       return;
     }
     const observer = new ResizeObserver(() => {
-      const ele = ref.current?.querySelector('.view-content');
-      if (ele) {
-        const maxHeight = settings.cardContentMaxHeight === 'expand' ? Infinity : 
-                         settings.cardContentMaxHeight === 'short' ? 160 : 300;
-        setOverflow(ele.scrollHeight > maxHeight);
-      }
+      window.requestAnimationFrame(() => {
+        const ele = ref.current?.querySelector('.view-content');
+        if (ele) {
+          const maxHeight = cardContentMaxHeight === 'expand' ? Infinity :
+            cardContentMaxHeight === 'short' ? 160 : 300;
+          setOverflow(ele.scrollHeight > maxHeight);
+        }
+      });
     });
     if (ref.current) {
       observer.observe(ref.current);
     }
     return () => observer.disconnect();
-  }, [editMode, settings.cardContentMaxHeight]);
+  }, [editMode, cardContentMaxHeight]);
 
   const handleExpandToggle = () => {
     setIsExpanded(!isExpanded);
@@ -60,21 +73,21 @@ const NoteContentView = ({ app, fileInfo, editMode, endEdit }: { app: App, fileI
 
   const getContentClassName = () => {
     let className = "card-note-content";
-    
+
     if (isExpanded) {
       className += " card-note-content--expanded";
-    } else if (settings.cardContentMaxHeight === 'expand') {
+    } else if (cardContentMaxHeight === 'expand') {
       className += " card-note-content--expand";
-    } else if (settings.cardContentMaxHeight === 'short') {
+    } else if (cardContentMaxHeight === 'short') {
       className += " card-note-content--short";
     } else {
       className += " card-note-content--normal";
     }
-    
-    if (overflow && !isExpanded && settings.cardContentMaxHeight !== 'expand') {
+
+    if (overflow && !isExpanded && cardContentMaxHeight !== 'expand') {
       className += " card-note-content--overflow";
     }
-    
+
     return className;
   };
 
@@ -94,17 +107,17 @@ const NoteContentView = ({ app, fileInfo, editMode, endEdit }: { app: App, fileI
 
   return (
     <div style={{ position: 'relative' }}>
-      <div ref={ref} className={getContentClassName()} data-font-theme={settings.fontTheme} />
-      {overflow && !isExpanded && settings.cardContentMaxHeight !== 'expand' && (
-        <div 
+      <div ref={ref} className={getContentClassName()} data-font-theme={fontTheme} />
+      {overflow && !isExpanded && cardContentMaxHeight !== 'expand' && (
+        <div
           className="card-note-expand-button"
           onClick={handleExpandToggle}
         >
           {i18n.t('general_expand')}
         </div>
       )}
-      {isExpanded && settings.cardContentMaxHeight !== 'expand' && (
-        <div 
+      {isExpanded && cardContentMaxHeight !== 'expand' && (
+        <div
           className="card-note-expand-button"
           onClick={handleExpandToggle}
         >
@@ -115,31 +128,30 @@ const NoteContentView = ({ app, fileInfo, editMode, endEdit }: { app: App, fileI
   );
 };
 
-const CardNote2 = ({ fileInfo }: { fileInfo: FileInfo }) => {
+const CardNote2 = ({ fileInfo, isPinned }: { fileInfo: FileInfo, isPinned: boolean }) => {
 
   const plugin = useCombineStore((state) => state.plugin);
-  const settings = useCombineStore((state) => state.settings);
-  const isPinned = useCombineStore((state) => state.curScheme.pinned.includes(fileInfo.id));
+  const showBacklinksInCardNote = useCombineStore((state) => state.settings.showBacklinksInCardNote);
+  const sortType = useCombineStore((state) => state.appData.sortType);
+  // isPinned passed as prop
   const setCurScheme = useCombineStore((state) => state.setCurScheme);
   const app = plugin.app;
-  const isCreated = settings.sortType === 'created' || settings.sortType === 'earliestCreated';
+  const isCreated = sortType === 'created' || sortType === 'earliestCreated';
   const tags = fileInfo.tags;
 
   const addEditingFile = useCombineStore((state) => state.addEditingFile);
   const deleteEditingFile = useCombineStore((state) => state.deleteEditingFile);
+  const editMode = useCombineStore((state) => state.editingFilesPath.includes(fileInfo.file.path));
 
-  const [editMode, setEditMode] = React.useState(false);
   const shouldShowTitle = useCombineStore((state) => state.shouldShowTitle);
 
   const handleEditStart = React.useCallback(() => {
-    addEditingFile(fileInfo.id);
-    setEditMode(true);
-  }, [addEditingFile]);
+    addEditingFile(fileInfo.file.path);
+  }, [addEditingFile, fileInfo.file.path]);
 
   const handleEditEnd = React.useCallback(() => {
-    deleteEditingFile(fileInfo.id);
-    setEditMode(false);
-  }, [deleteEditingFile]);
+    deleteEditingFile(fileInfo.file.path);
+  }, [deleteEditingFile, fileInfo.file.path]);
 
   return (
     <div
@@ -173,7 +185,7 @@ const CardNote2 = ({ fileInfo }: { fileInfo: FileInfo }) => {
         </div>
       </div>}
       <NoteContentView app={app} fileInfo={fileInfo} editMode={editMode} endEdit={handleEditEnd} />
-      {!editMode && settings.showBacklinksInCardNote && <div className="card-note-footer">
+      {!editMode && showBacklinksInCardNote && <div className="card-note-footer">
         <CardNoteBacklinksView app={app} fileInfo={fileInfo} />
       </div>}
     </div>
