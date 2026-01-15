@@ -20,6 +20,19 @@ export interface BanyanPluginSettings {
 	newNoteLocationMode?: NewNoteLocationMode;
 	customNewNoteLocation?: string;
 
+	// heatmap
+	heatmapCalculationStandard?: 'fileCount' | 'charCount';
+	heatmapFileCountStep?: number;
+	heatmapCharCountStep?: number;
+	heatmapColorLevel0?: string;
+	heatmapColorLevel1?: string;
+	heatmapColorLevel2?: string;
+	heatmapColorLevel3?: string;
+	heatmapColorLevel4?: string;
+	heatmapCellRadius?: number;
+	heatmapCellSize?: number;
+	heatmapCellGutter?: number;
+
 }
 
 export const CUR_SETTINGS_VERSION = 8;
@@ -45,5 +58,18 @@ export const DEFAULT_SETTINGS: BanyanPluginSettings = {
 	showAddNoteRibbonIcon: true,
 	newNoteLocationMode: 'current',
 	customNewNoteLocation: '',
+
+	// heatmap
+	heatmapCalculationStandard: 'charCount',
+	heatmapFileCountStep: 1,
+	heatmapCharCountStep: 1000,
+	heatmapColorLevel0: '--background-primary-alt',
+	heatmapColorLevel1: '#053A17',
+	heatmapColorLevel2: '#1D6C30',
+	heatmapColorLevel3: '#33A047',
+	heatmapColorLevel4: '#5AD368',
+	heatmapCellRadius: 2,
+	heatmapCellSize: 6,
+	heatmapCellGutter: 0,
 
 }

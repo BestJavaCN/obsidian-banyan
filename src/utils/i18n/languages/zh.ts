@@ -63,6 +63,7 @@ export default {
     setting_header_cards: "🗂 卡片视图",
     setting_header_editor: "✏️ 新建笔记",
     setting_header_clean: "⚠️ 旧版数据清理",
+    setting_header_heatmap: "🔥 热力图设置",
 
     setting_note_directory_name: "笔记目录",
     setting_note_directory_desc1: "「卡片面板」只会管理该目录下的所有笔记。",
@@ -195,6 +196,7 @@ export default {
     month12: "十二月",
     notes_created_at: "条笔记创建于",
     notes_modified_at: "条笔记更新于",
+    characters_written: "字符写入于",
 
     create_note: "创建笔记",
     setting_panel: "设置面板",

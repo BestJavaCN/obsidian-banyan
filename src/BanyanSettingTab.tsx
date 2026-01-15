@@ -41,6 +41,13 @@ export class BanyanSettingTab extends PluginSettingTab {
 		// 旧版清理
 		new Setting(containerEl).setName(i18n.t('setting_header_clean')).setHeading();
 		this.setupMigrateTitleToFilenameSetting(containerEl);
+
+		// 热力图设置
+		new Setting(containerEl).setName(i18n.t('setting_header_heatmap')).setHeading();
+		this.setupHeatmapCalculationStandardSetting(containerEl);
+		this.setupHeatmapStepSettings(containerEl);
+		this.setupHeatmapColorSettings(containerEl);
+		this.setupHeatmapCellSettings(containerEl);
 	}
 
 	setupCardsDirectorySetting(containerEl: HTMLElement) {
@@ -256,6 +263,164 @@ export class BanyanSettingTab extends PluginSettingTab {
 				btn.setButtonText(i18n.t('setting_remove_id_btn'))
 					.onClick(async () => {
 						openRemoveIdModal({ app: this.app, plugin: this.plugin });
+				});
+		});
+	}
+
+	// 热力图设置方法
+	setupHeatmapCalculationStandardSetting(containerEl: HTMLElement) {
+		const settings = useCombineStore.getState().settings;
+		new Setting(containerEl)
+			.setName('热力图计算标准')
+			.setDesc('选择以文件数量或录入字数作为热力图颜色深浅的标准 (默认: 录入字数)')
+			.addDropdown(dropdown => {
+				dropdown.addOption('fileCount', '文件数量')
+					.addOption('charCount', '录入字数')
+					.setValue(settings.heatmapCalculationStandard ?? 'charCount')
+					.onChange(async (value) => {
+						useCombineStore.getState().updateHeatmapCalculationStandard(value as 'fileCount' | 'charCount');
+					});
+			});
+	}
+
+	setupHeatmapStepSettings(containerEl: HTMLElement) {
+		const settings = useCombineStore.getState().settings;
+		
+		// 文件数量步长
+		new Setting(containerEl)
+			.setName('文件数量步长')
+			.setDesc('以文件数量为标准时，每增加多少个文件颜色深一级 (默认: 1)')
+			.addText(text => {
+				text.setValue((settings.heatmapFileCountStep ?? 1).toString())
+					.onChange(async (value) => {
+						const step = parseInt(value);
+						if (!isNaN(step) && step > 0) {
+							useCombineStore.getState().updateHeatmapFileCountStep(step);
+						}
+					});
+			});
+
+		// 字符数步长
+		new Setting(containerEl)
+			.setName('字符数步长')
+			.setDesc('以录入字数为标准时，每增加多少个字符颜色深一级 (默认: 1000)')
+			.addText(text => {
+				text.setValue((settings.heatmapCharCountStep ?? 1000).toString())
+					.onChange(async (value) => {
+						const step = parseInt(value);
+						if (!isNaN(step) && step > 0) {
+							useCombineStore.getState().updateHeatmapCharCountStep(step);
+						}
+					});
+			});
+	}
+
+	setupHeatmapColorSettings(containerEl: HTMLElement) {
+		const settings = useCombineStore.getState().settings;
+		
+		// 颜色设置
+		new Setting(containerEl)
+			.setName('热力图颜色')
+			.setDesc('自定义热力图各级颜色');
+
+		// 第0级颜色
+		new Setting(containerEl)
+			.setName('第0级颜色 (无数据)')
+			.setDesc('无数据时的颜色 (默认: --background-primary-alt)')
+			.addText(text => {
+				text.setValue(settings.heatmapColorLevel0 ?? '--background-primary-alt')
+					.onChange(async (value) => {
+						useCombineStore.getState().updateHeatmapColorLevel0(value);
+					});
+			});
+
+		// 第1级颜色
+		new Setting(containerEl)
+			.setName('第1级颜色')
+			.setDesc('最低数据量时的颜色 (默认: #053A17)')
+			.addText(text => {
+				text.setValue(settings.heatmapColorLevel1 ?? '#053A17')
+					.onChange(async (value) => {
+						useCombineStore.getState().updateHeatmapColorLevel1(value);
+					});
+			});
+
+		// 第2级颜色
+		new Setting(containerEl)
+			.setName('第2级颜色')
+			.setDesc('较低数据量时的颜色 (默认: #1D6C30)')
+			.addText(text => {
+				text.setValue(settings.heatmapColorLevel2 ?? '#1D6C30')
+					.onChange(async (value) => {
+						useCombineStore.getState().updateHeatmapColorLevel2(value);
+					});
+			});
+
+		// 第3级颜色
+		new Setting(containerEl)
+			.setName('第3级颜色')
+			.setDesc('较高数据量时的颜色 (默认: #33A047)')
+			.addText(text => {
+				text.setValue(settings.heatmapColorLevel3 ?? '#33A047')
+					.onChange(async (value) => {
+						useCombineStore.getState().updateHeatmapColorLevel3(value);
+					});
+			});
+
+		// 第4级颜色
+		new Setting(containerEl)
+			.setName('第4级颜色')
+			.setDesc('最高数据量时的颜色 (默认: #5AD368)')
+			.addText(text => {
+				text.setValue(settings.heatmapColorLevel4 ?? '#5AD368')
+					.onChange(async (value) => {
+						useCombineStore.getState().updateHeatmapColorLevel4(value);
+					});
+			});
+	}
+
+	setupHeatmapCellSettings(containerEl: HTMLElement) {
+		const settings = useCombineStore.getState().settings;
+		
+		// 单元格圆角
+		new Setting(containerEl)
+			.setName('热力图单元格圆角')
+			.setDesc('设置热力图色块的圆角大小 (px) (默认: 2px)')
+			.addText(text => {
+				text.setValue((settings.heatmapCellRadius ?? 2).toString())
+					.onChange(async (value) => {
+						const radius = parseInt(value);
+						if (!isNaN(radius) && radius >= 0) {
+							useCombineStore.getState().updateHeatmapCellRadius(radius);
+						}
+					});
+			});
+
+		// 单元格大小
+		new Setting(containerEl)
+			.setName('热力图单元格大小')
+			.setDesc('设置热力图色块的大小 (px) (默认: 6px)')
+			.addText(text => {
+				text.setValue((settings.heatmapCellSize ?? 6).toString())
+					.onChange(async (value) => {
+						const size = parseInt(value);
+						if (!isNaN(size) && size > 0) {
+							useCombineStore.getState().updateHeatmapCellSize(size);
+						}
+					});
+			});
+
+		// 单元格间距
+		new Setting(containerEl)
+			.setName('热力图单元格间距')
+			.setDesc('设置热力图色块之间的间距 (px) (默认: 0px)')
+			.addText(text => {
+				text.setValue((settings.heatmapCellGutter ?? 0).toString())
+					.onChange(async (value) => {
+						const gutter = parseInt(value);
+						if (!isNaN(gutter) && gutter >= 0) {
+							useCombineStore.getState().updateHeatmapCellGutter(gutter);
+						}
 					});
 			});
 	}

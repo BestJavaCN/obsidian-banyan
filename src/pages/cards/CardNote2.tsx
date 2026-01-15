@@ -168,7 +168,7 @@ const CardNote2 = ({ fileInfo, isPinned }: { fileInfo: FileInfo, isPinned: boole
       }}
     >
       {!editMode && <div className="card-note-header">
-        <div className="card-note-time">{isPinned ? `${i18n.t('general_pin')} · ` : ""}{isCreated ? i18n.t('created_at') : i18n.t('updated_at')} {new Date(isCreated ? fileInfo.file.stat.ctime : fileInfo.file.stat.mtime).toLocaleString()}</div>
+        <div className="card-note-time">{isPinned ? `${i18n.t('general_pin')} · ` : ""}{isCreated ? i18n.t('created_at') : i18n.t('updated_at')} {new Date(isCreated ? (fileInfo.created || fileInfo.file.stat.ctime) : fileInfo.file.stat.mtime).toLocaleString()}</div>
         {shouldShowTitle(fileInfo.file.basename) && <div className="card-note-title"><h3>{fileInfo.file.basename}</h3></div>}
         {tags.length > 0 && <div className="card-note-tags"> {tags.map((tag) =>
           <div className="card-note-tag" key={tag} onClick={() => {

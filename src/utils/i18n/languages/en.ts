@@ -63,6 +63,7 @@ export default {
     setting_header_cards: "🗂 Card view",
     setting_header_editor: "✏️ Create note",
     setting_header_clean: "⚠️ Old Data Cleanup",
+    setting_header_heatmap: "🔥 Heatmap Settings",
 
     setting_note_directory_name: "Notes directory",
     setting_note_directory_desc1: "This plugin only manages notes in this directory.",
@@ -193,6 +194,7 @@ export default {
     month12: "December",
     notes_created_at: "notes created at",
     notes_modified_at: "notes modified at",
+    characters_written: "characters written at",
 
     create_note: "Create note",
     setting_panel: "Setting panel",

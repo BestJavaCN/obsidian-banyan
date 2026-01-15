@@ -103,7 +103,7 @@ export function openCardNoteMoreMenu({ event, fileInfo, isPinned }: CardNoteMenu
   };
   const ctimeInfo = () => {
     menu.addItem((item) => {
-      item.setTitle(`${i18n.t('general_create')}: ${new Date(fileInfo.file.stat.ctime).toLocaleString()}`);
+      item.setTitle(`${i18n.t('general_create')}: ${new Date(fileInfo.created || fileInfo.file.stat.ctime).toLocaleString()}`);
       item.setDisabled(true);
     });
   };

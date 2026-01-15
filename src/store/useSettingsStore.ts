@@ -30,6 +30,19 @@ export interface SettingsState {
     updateNewNoteLocationMode: (mode: NewNoteLocationMode) => void;
     updateCustomNewNoteLocation: (directory: string) => void;
 
+    // heatmap settings
+    updateHeatmapCalculationStandard: (standard: 'fileCount' | 'charCount') => void;
+    updateHeatmapFileCountStep: (step: number) => void;
+    updateHeatmapCharCountStep: (step: number) => void;
+    updateHeatmapColorLevel0: (color: string) => void;
+    updateHeatmapColorLevel1: (color: string) => void;
+    updateHeatmapColorLevel2: (color: string) => void;
+    updateHeatmapColorLevel3: (color: string) => void;
+    updateHeatmapColorLevel4: (color: string) => void;
+    updateHeatmapCellRadius: (radius: number) => void;
+    updateHeatmapCellSize: (size: number) => void;
+    updateHeatmapCellGutter: (gutter: number) => void;
+
     // UI state updates
     updateFilterSchemesExpanded: (expanded: boolean) => void;
     updateRandomReviewExpanded: (expanded: boolean) => void;
@@ -115,6 +128,41 @@ export const useSettingsStore: StateCreator<CombineState, [], [], SettingsState>
     },
     updateCustomNewNoteLocation: (directory: string) => {
         get().updateSettings({ customNewNoteLocation: directory });
+    },
+
+    // heatmap settings
+    updateHeatmapCalculationStandard: (standard: 'fileCount' | 'charCount') => {
+        get().updateSettings({ heatmapCalculationStandard: standard });
+    },
+    updateHeatmapFileCountStep: (step: number) => {
+        get().updateSettings({ heatmapFileCountStep: step });
+    },
+    updateHeatmapCharCountStep: (step: number) => {
+        get().updateSettings({ heatmapCharCountStep: step });
+    },
+    updateHeatmapColorLevel0: (color: string) => {
+        get().updateSettings({ heatmapColorLevel0: color });
+    },
+    updateHeatmapColorLevel1: (color: string) => {
+        get().updateSettings({ heatmapColorLevel1: color });
+    },
+    updateHeatmapColorLevel2: (color: string) => {
+        get().updateSettings({ heatmapColorLevel2: color });
+    },
+    updateHeatmapColorLevel3: (color: string) => {
+        get().updateSettings({ heatmapColorLevel3: color });
+    },
+    updateHeatmapColorLevel4: (color: string) => {
+        get().updateSettings({ heatmapColorLevel4: color });
+    },
+    updateHeatmapCellRadius: (radius: number) => {
+        get().updateSettings({ heatmapCellRadius: radius });
+    },
+    updateHeatmapCellSize: (size: number) => {
+        get().updateSettings({ heatmapCellSize: size });
+    },
+    updateHeatmapCellGutter: (gutter: number) => {
+        get().updateSettings({ heatmapCellGutter: gutter });
     },
 
     // UI state updates

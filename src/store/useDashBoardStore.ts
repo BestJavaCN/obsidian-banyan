@@ -50,8 +50,8 @@ export const useDashBoardStore: StateCreator<CombineState, [], [], DashBoardStat
         let filtered = allFiles;
         if (curScheme.type == 'FilterScheme') {
             // date range
-            filtered = filtered.filter(({ file }) => {
-                const timeToCheck = (sortType === 'created' || sortType === 'earliestCreated') ? file.stat.ctime : file.stat.mtime;
+            filtered = filtered.filter(({ file, created }) => {
+                const timeToCheck = (sortType === 'created' || sortType === 'earliestCreated') ? (created || file.stat.ctime) : file.stat.mtime;
                 return withinDateRange(timeToCheck, curScheme.dateRange);
             });
             // key word
@@ -84,15 +84,15 @@ export const useDashBoardStore: StateCreator<CombineState, [], [], DashBoardStat
             filtered.sort((a, b) => {
                 switch (sortType) {
                     case 'created':
-                        return b.file.stat.ctime - a.file.stat.ctime; // 最近创建
+                        return (b.created || b.file.stat.ctime) - (a.created || a.file.stat.ctime); // 最近创建
                     case 'modified':
                         return b.file.stat.mtime - a.file.stat.mtime; // 最近更新
                     case 'earliestCreated':
-                        return a.file.stat.ctime - b.file.stat.ctime; // 最早创建
+                        return (a.created || a.file.stat.ctime) - (b.created || b.file.stat.ctime); // 最早创建
                     case 'earliestModified':
                         return a.file.stat.mtime - b.file.stat.mtime; // 最早更新
                     default:
-                        return b.file.stat.ctime - a.file.stat.ctime;
+                        return (b.created || b.file.stat.ctime) - (a.created || a.file.stat.ctime);
                 }
             });
         }
