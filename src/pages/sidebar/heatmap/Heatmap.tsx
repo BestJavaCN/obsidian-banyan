@@ -147,7 +147,23 @@ export const Heatmap = ({ onCickDate }: {
             
             /* 颜色样式 */
             .react-calendar-heatmap .color-scale-0 {
-                fill: --background-primary-alt;
+                fill: #e0d2b3;
+            }
+            
+            /* 深色模式下的无数据色块颜色 */
+            .theme-dark .react-calendar-heatmap .color-scale-0 {
+                 fill: #333333;
+            }
+            
+            /* 月份标签样式 */
+            .react-calendar-heatmap text {
+                fill: currentColor;
+                font-size: 10px;
+            }
+            
+            /* 确保热力图容器继承正确的文本颜色 */
+            .react-calendar-heatmap {
+                color: var(--text-normal);
             }
             
             .react-calendar-heatmap .color-scale-1 {
