@@ -88,10 +88,29 @@ export const Heatmap = ({ onCickDate }: {
                 plugin, 
                 settings.heatmapCalculationStandard || 'charCount'
             );
-            setValues(heatmapValues);
+            
+            // 创建日期到计数的映射
+            const valueMap = new Map(heatmapValues.map(item => [item.date, item.count]));
+            
+            // 生成所有日期的数据
+            const weeksToShow = settings.heatmapWeeks || 12;
+            const startDate = shiftDate(today, -weeksToShow * 7);
+            const allDates: HeatmapData[] = [];
+            
+            const currentDate = new Date(startDate);
+            while (currentDate <= today) {
+                const dateStr = currentDate.toISOString().split('T')[0];
+                allDates.push({
+                    date: dateStr,
+                    count: valueMap.get(dateStr) || 0
+                });
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            
+            setValues(allDates);
         };
         fetchHeatmapValues();
-    }, [allFiles, sortType, plugin, settings.heatmapCalculationStandard]);
+    }, [allFiles, sortType, plugin, settings.heatmapCalculationStandard, settings.heatmapWeeks]);
 
     // 动态生成热力图样式
     useEffect(() => {
@@ -205,7 +224,7 @@ export const Heatmap = ({ onCickDate }: {
                         i18n.t('characters_written');
                     return {
                         'data-tooltip-id': 'my-tooltip',
-                        'data-tooltip-content': value && value.date ? `${value.count || 0} ${label} ${value.date}` : '',
+                        'data-tooltip-content': `${value?.count || 0} ${label} ${value?.date || ''}`,
                     };
                 }}
                 showWeekdayLabels={false}
