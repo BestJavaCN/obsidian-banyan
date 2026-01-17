@@ -25,11 +25,6 @@ export interface BanyanPluginSettings {
 	heatmapFileCountStep?: number;
 	heatmapCharCountStep?: number;
 	heatmapColorScheme?: string; // 配色方案名称
-	heatmapColorLevel0?: string;
-	heatmapColorLevel1?: string;
-	heatmapColorLevel2?: string;
-	heatmapColorLevel3?: string;
-	heatmapColorLevel4?: string;
 	heatmapCellRadius?: number;
 	heatmapCellSize?: number;
 	heatmapCellGutter?: number;
@@ -65,11 +60,6 @@ export const DEFAULT_SETTINGS: BanyanPluginSettings = {
 	heatmapFileCountStep: 1,
 	heatmapCharCountStep: 1000,
 	heatmapColorScheme: 'github',
-	heatmapColorLevel0: '--background-primary-alt',
-	heatmapColorLevel1: '#5AD368',
-	heatmapColorLevel2: '#33A047',
-	heatmapColorLevel3: '#1D6C30',
-	heatmapColorLevel4: '#053A17',
 	heatmapCellRadius: 2,
 	heatmapCellSize: 6,
 	heatmapCellGutter: 0,

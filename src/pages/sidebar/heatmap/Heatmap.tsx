@@ -128,7 +128,7 @@ export const Heatmap = ({ onCickDate }: {
             
             /* 颜色样式 */
             .react-calendar-heatmap .color-scale-0 {
-                fill: ${settings.heatmapColorLevel0 || '--background-primary-alt'};
+                fill: --background-primary-alt;
             }
             
             .react-calendar-heatmap .color-scale-1 {
@@ -161,7 +161,6 @@ export const Heatmap = ({ onCickDate }: {
     }, [
         settings.heatmapCellRadius,
         settings.heatmapCellSize,
-        settings.heatmapColorLevel0,
         settings.heatmapColorScheme,
         isDarkMode
     ]);

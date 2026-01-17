@@ -47,7 +47,6 @@ export class BanyanSettingTab extends PluginSettingTab {
 		this.setupHeatmapColorSchemeSetting(containerEl);
 		this.setupHeatmapCalculationStandardSetting(containerEl);
 		this.setupHeatmapStepSettings(containerEl);
-		this.setupHeatmapColorSettings(containerEl);
 		this.setupHeatmapCellSettings(containerEl);
 	}
 
@@ -330,70 +329,6 @@ export class BanyanSettingTab extends PluginSettingTab {
 						if (!isNaN(step) && step > 0) {
 							useCombineStore.getState().updateHeatmapCharCountStep(step);
 						}
-					});
-			});
-	}
-
-	setupHeatmapColorSettings(containerEl: HTMLElement) {
-		const settings = useCombineStore.getState().settings;
-		
-		// 颜色设置
-		new Setting(containerEl)
-			.setName('热力图颜色')
-			.setDesc('自定义热力图各级颜色');
-
-		// 第0级颜色
-		new Setting(containerEl)
-			.setName('第0级颜色 (无数据)')
-			.setDesc('无数据时的颜色 (默认: --background-primary-alt)')
-			.addText(text => {
-				text.setValue(settings.heatmapColorLevel0 ?? '--background-primary-alt')
-					.onChange(async (value) => {
-						useCombineStore.getState().updateHeatmapColorLevel0(value);
-					});
-			});
-
-		// 第1级颜色
-		new Setting(containerEl)
-			.setName('第1级颜色')
-			.setDesc('最低数据量时的颜色 (默认: #053A17)')
-			.addText(text => {
-				text.setValue(settings.heatmapColorLevel1 ?? '#053A17')
-					.onChange(async (value) => {
-						useCombineStore.getState().updateHeatmapColorLevel1(value);
-					});
-			});
-
-		// 第2级颜色
-		new Setting(containerEl)
-			.setName('第2级颜色')
-			.setDesc('较低数据量时的颜色 (默认: #1D6C30)')
-			.addText(text => {
-				text.setValue(settings.heatmapColorLevel2 ?? '#1D6C30')
-					.onChange(async (value) => {
-						useCombineStore.getState().updateHeatmapColorLevel2(value);
-					});
-			});
-
-		// 第3级颜色
-		new Setting(containerEl)
-			.setName('第3级颜色')
-			.setDesc('较高数据量时的颜色 (默认: #33A047)')
-			.addText(text => {
-				text.setValue(settings.heatmapColorLevel3 ?? '#33A047')
-					.onChange(async (value) => {
-						useCombineStore.getState().updateHeatmapColorLevel3(value);
-					});
-			});
-
-		// 第4级颜色
-		new Setting(containerEl)
-			.setName('第4级颜色')
-			.setDesc('最高数据量时的颜色 (默认: #5AD368)')
-			.addText(text => {
-				text.setValue(settings.heatmapColorLevel4 ?? '#5AD368')
-					.onChange(async (value) => {
-						useCombineStore.getState().updateHeatmapColorLevel4(value);
 					});
 			});
 	}
