@@ -46,6 +46,7 @@ export class BanyanSettingTab extends PluginSettingTab {
 		new Setting(containerEl).setName(i18n.t('setting_header_heatmap')).setHeading();
 		this.setupHeatmapColorSchemeSetting(containerEl);
 		this.setupHeatmapCalculationStandardSetting(containerEl);
+		this.setupHeatmapWeeksSetting(containerEl);
 		this.setupHeatmapStepSettings(containerEl);
 		this.setupHeatmapCellSettings(containerEl);
 	}
@@ -328,6 +329,22 @@ export class BanyanSettingTab extends PluginSettingTab {
 						const step = parseInt(value);
 						if (!isNaN(step) && step > 0) {
 							useCombineStore.getState().updateHeatmapCharCountStep(step);
+						}
+					});
+			});
+	}
+
+	setupHeatmapWeeksSetting(containerEl: HTMLElement) {
+		const settings = useCombineStore.getState().settings;
+		new Setting(containerEl)
+			.setName('热力图显示周数')
+			.setDesc('设置热力图显示的周数 (默认: 12)')
+			.addText(text => {
+				text.setValue((settings.heatmapWeeks ?? 12).toString())
+					.onChange(async (value) => {
+						const weeks = parseInt(value);
+						if (!isNaN(weeks) && weeks > 0 && weeks <= 52) {
+							useCombineStore.getState().updateHeatmapWeeks(weeks);
 						}
 					});
 			});

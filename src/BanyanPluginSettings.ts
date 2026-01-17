@@ -25,6 +25,7 @@ export interface BanyanPluginSettings {
 	heatmapFileCountStep?: number;
 	heatmapCharCountStep?: number;
 	heatmapColorScheme?: string; // 配色方案名称
+	heatmapWeeks?: number; // 显示的周数
 	heatmapCellRadius?: number;
 	heatmapCellSize?: number;
 	heatmapCellGutter?: number;
@@ -60,6 +61,7 @@ export const DEFAULT_SETTINGS: BanyanPluginSettings = {
 	heatmapFileCountStep: 1,
 	heatmapCharCountStep: 1000,
 	heatmapColorScheme: 'github',
+	heatmapWeeks: 12, // 默认显示12周
 	heatmapCellRadius: 2,
 	heatmapCellSize: 6,
 	heatmapCellGutter: 0,

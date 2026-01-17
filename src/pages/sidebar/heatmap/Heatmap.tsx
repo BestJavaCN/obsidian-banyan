@@ -180,7 +180,7 @@ export const Heatmap = ({ onCickDate }: {
     return (
         <div>
             <CalendarHeatmap
-                startDate={shiftDate(today, -12 * 7)}
+                startDate={shiftDate(today, -(settings.heatmapWeeks || 12) * 7)}
                 endDate={today}
                 onClick={(value) => value && onCickDate(value.date)}
                 values={values}

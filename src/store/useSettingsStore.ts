@@ -34,6 +34,7 @@ export interface SettingsState {
     updateHeatmapCalculationStandard: (standard: 'fileCount' | 'charCount') => void;
     updateHeatmapFileCountStep: (step: number) => void;
     updateHeatmapCharCountStep: (step: number) => void;
+    updateHeatmapWeeks: (weeks: number) => void;
     updateHeatmapCellRadius: (radius: number) => void;
     updateHeatmapCellSize: (size: number) => void;
     updateHeatmapCellGutter: (gutter: number) => void;
@@ -135,6 +136,9 @@ export const useSettingsStore: StateCreator<CombineState, [], [], SettingsState>
     },
     updateHeatmapCharCountStep: (step: number) => {
         get().updateSettings({ heatmapCharCountStep: step });
+    },
+    updateHeatmapWeeks: (weeks: number) => {
+        get().updateSettings({ heatmapWeeks: weeks });
     },
     updateHeatmapCellRadius: (radius: number) => {
         get().updateSettings({ heatmapCellRadius: radius });
