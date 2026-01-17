@@ -6,6 +6,7 @@ import { SortType } from 'src/models/Enum';
 import { FileInfo } from 'src/models/FileInfo';
 import { useCombineStore } from 'src/store';
 import { i18n } from 'src/utils/i18n';
+import { App } from 'obsidian';
 
 export type HeatmapData = {
     date: string,
@@ -21,6 +22,62 @@ export const Heatmap = ({ onCickDate }: {
     const plugin = useCombineStore((state) => state.plugin);
     const settings = useCombineStore((state) => state.settings);
     const [values, setValues] = useState<HeatmapData[]>([]);
+    const [isDarkMode, setIsDarkMode] = useState(false);
+
+    // 配色方案定义
+    const colorSchemes = {
+        github: {
+            name: "GitHub",
+            description: "GitHub风格的绿色系",
+            colors: ["#5AD368", "#33A047", "#1D6C30", "#053A17"] // 浅色模式顺序
+        },
+        ocean: {
+            name: "Ocean",
+            description: "海洋风格的蓝色系",
+            colors: ["#8dd1e2", "#63a1be", "#376d93", "#012f60"] // 浅色模式顺序
+        },
+        halloween: {
+            name: "Halloween",
+            description: "万圣节风格的橙色系",
+            colors: ["#fdd577", "#faaa53", "#f07c44", "#d94e49"] // 浅色模式顺序
+        },
+        lovely: {
+            name: "Lovely",
+            description: "可爱风格的粉色系",
+            colors: ["#fedcdc", "#fdb8bf", "#f892a9", "#ec6a97"] // 浅色模式顺序
+        },
+        wine: {
+            name: "Wine",
+            description: "葡萄酒风格的红色系",
+            colors: ["#d8b0b3", "#c78089", "#ac4c61", "#830738"] // 浅色模式顺序
+        }
+    };
+
+    // 检测当前主题模式
+    useEffect(() => {
+        const checkDarkMode = () => {
+            const isDark = document.body.hasClass('theme-dark');
+            setIsDarkMode(isDark);
+        };
+
+        // 初始检测
+        checkDarkMode();
+
+        // 监听主题变化
+        const observer = new MutationObserver(checkDarkMode);
+        observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
+        return () => observer.disconnect();
+    }, []);
+
+    // 根据配色方案和主题模式获取颜色
+    const getColors = () => {
+        const schemeName = settings.heatmapColorScheme || 'github';
+        const scheme = colorSchemes[schemeName as keyof typeof colorSchemes] || colorSchemes.github;
+        
+        // 深色模式下反转颜色顺序
+        return isDarkMode ? [...scheme.colors].reverse() : scheme.colors;
+    };
 
     useEffect(() => {
         const fetchHeatmapValues = async () => {
@@ -43,6 +100,9 @@ export const Heatmap = ({ onCickDate }: {
         if (oldStyle) {
             oldStyle.remove();
         }
+
+        // 获取当前配色方案的颜色
+        const colors = getColors();
 
         // 创建新的样式标签
         const style = document.createElement('style');
@@ -72,19 +132,19 @@ export const Heatmap = ({ onCickDate }: {
             }
             
             .react-calendar-heatmap .color-scale-1 {
-                fill: ${settings.heatmapColorLevel1 || '#053A17'};
+                fill: ${colors[0]};
             }
             
             .react-calendar-heatmap .color-scale-2 {
-                fill: ${settings.heatmapColorLevel2 || '#1D6C30'};
+                fill: ${colors[1]};
             }
             
             .react-calendar-heatmap .color-scale-3 {
-                fill: ${settings.heatmapColorLevel3 || '#33A047'};
+                fill: ${colors[2]};
             }
             
             .react-calendar-heatmap .color-scale-4 {
-                fill: ${settings.heatmapColorLevel4 || '#5AD368'};
+                fill: ${colors[3]};
             }
         `;
 
@@ -102,10 +162,8 @@ export const Heatmap = ({ onCickDate }: {
         settings.heatmapCellRadius,
         settings.heatmapCellSize,
         settings.heatmapColorLevel0,
-        settings.heatmapColorLevel1,
-        settings.heatmapColorLevel2,
-        settings.heatmapColorLevel3,
-        settings.heatmapColorLevel4
+        settings.heatmapColorScheme,
+        isDarkMode
     ]);
     // 自定义转换函数，用于控制色块的大小和样式
     const transformDayElement = (element: any, value: HeatmapData, index: number) => {

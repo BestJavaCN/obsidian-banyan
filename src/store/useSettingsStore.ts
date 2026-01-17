@@ -42,6 +42,7 @@ export interface SettingsState {
     updateHeatmapCellRadius: (radius: number) => void;
     updateHeatmapCellSize: (size: number) => void;
     updateHeatmapCellGutter: (gutter: number) => void;
+	updateHeatmapColorScheme: (scheme: string) => void;
 
     // UI state updates
     updateFilterSchemesExpanded: (expanded: boolean) => void;
@@ -163,6 +164,9 @@ export const useSettingsStore: StateCreator<CombineState, [], [], SettingsState>
     },
     updateHeatmapCellGutter: (gutter: number) => {
         get().updateSettings({ heatmapCellGutter: gutter });
+    },
+    updateHeatmapColorScheme: (scheme: string) => {
+        get().updateSettings({ heatmapColorScheme: scheme });
     },
 
     // UI state updates

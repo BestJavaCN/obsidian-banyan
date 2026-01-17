@@ -44,6 +44,7 @@ export class BanyanSettingTab extends PluginSettingTab {
 
 		// 热力图设置
 		new Setting(containerEl).setName(i18n.t('setting_header_heatmap')).setHeading();
+		this.setupHeatmapColorSchemeSetting(containerEl);
 		this.setupHeatmapCalculationStandardSetting(containerEl);
 		this.setupHeatmapStepSettings(containerEl);
 		this.setupHeatmapColorSettings(containerEl);
@@ -268,6 +269,24 @@ export class BanyanSettingTab extends PluginSettingTab {
 	}
 
 	// 热力图设置方法
+	setupHeatmapColorSchemeSetting(containerEl: HTMLElement) {
+		const settings = useCombineStore.getState().settings;
+		new Setting(containerEl)
+			.setName('热力图配色方案')
+			.setDesc('选择热力图的配色方案，在黑暗和明亮模式下会自动反色 (默认: GitHub)')
+			.addDropdown(dropdown => {
+				dropdown.addOption('github', 'GitHub (绿色)')
+					.addOption('ocean', 'Ocean (蓝色)')
+					.addOption('halloween', 'Halloween (橙色)')
+					.addOption('lovely', 'Lovely (粉色)')
+					.addOption('wine', 'Wine (红色)')
+					.setValue(settings.heatmapColorScheme ?? 'github')
+					.onChange(async (value) => {
+						useCombineStore.getState().updateHeatmapColorScheme(value);
+					});
+			});
+	}
+
 	setupHeatmapCalculationStandardSetting(containerEl: HTMLElement) {
 		const settings = useCombineStore.getState().settings;
 		new Setting(containerEl)

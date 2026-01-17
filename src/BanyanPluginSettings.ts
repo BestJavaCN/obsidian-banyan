@@ -20,10 +20,11 @@ export interface BanyanPluginSettings {
 	newNoteLocationMode?: NewNoteLocationMode;
 	customNewNoteLocation?: string;
 
-	// heatmap
+	// 热力图设置
 	heatmapCalculationStandard?: 'fileCount' | 'charCount';
 	heatmapFileCountStep?: number;
 	heatmapCharCountStep?: number;
+	heatmapColorScheme?: string; // 配色方案名称
 	heatmapColorLevel0?: string;
 	heatmapColorLevel1?: string;
 	heatmapColorLevel2?: string;
@@ -63,11 +64,12 @@ export const DEFAULT_SETTINGS: BanyanPluginSettings = {
 	heatmapCalculationStandard: 'charCount',
 	heatmapFileCountStep: 1,
 	heatmapCharCountStep: 1000,
+	heatmapColorScheme: 'github',
 	heatmapColorLevel0: '--background-primary-alt',
-	heatmapColorLevel1: '#053A17',
-	heatmapColorLevel2: '#1D6C30',
-	heatmapColorLevel3: '#33A047',
-	heatmapColorLevel4: '#5AD368',
+	heatmapColorLevel1: '#5AD368',
+	heatmapColorLevel2: '#33A047',
+	heatmapColorLevel3: '#1D6C30',
+	heatmapColorLevel4: '#053A17',
 	heatmapCellRadius: 2,
 	heatmapCellSize: 6,
 	heatmapCellGutter: 0,
