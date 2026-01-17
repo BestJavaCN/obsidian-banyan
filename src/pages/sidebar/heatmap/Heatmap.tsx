@@ -93,7 +93,7 @@ export const Heatmap = ({ onCickDate }: {
             const valueMap = new Map(heatmapValues.map(item => [item.date, item.count]));
             
             // 生成所有日期的数据
-            const weeksToShow = settings.heatmapWeeks || 12;
+            const weeksToShow = settings.heatmapWeeks || 20;
             const startDate = shiftDate(today, -weeksToShow * 7);
             const allDates: HeatmapData[] = [];
             
@@ -134,8 +134,8 @@ export const Heatmap = ({ onCickDate }: {
                 border: none !important;
                 rx: ${settings.heatmapCellRadius || 2}px;
                 ry: ${settings.heatmapCellRadius || 2}px;
-                width: ${settings.heatmapCellSize || 6}px;
-                height: ${settings.heatmapCellSize || 6}px;
+                width: ${settings.heatmapCellSize || 7}px;
+                height: ${settings.heatmapCellSize || 7}px;
             }
             
             /* 确保SVG容器没有额外的间距 */
@@ -204,8 +204,8 @@ export const Heatmap = ({ onCickDate }: {
         if (!value) return element;
         
         // 直接修改元素的属性
-        element.props.width = settings.heatmapCellSize || 6;
-        element.props.height = settings.heatmapCellSize || 6;
+        element.props.width = settings.heatmapCellSize || 7;
+        element.props.height = settings.heatmapCellSize || 7;
         element.props.rx = settings.heatmapCellRadius || 2;
         element.props.ry = settings.heatmapCellRadius || 2;
         
@@ -213,46 +213,85 @@ export const Heatmap = ({ onCickDate }: {
     };
 
     return (
-        <div>
-            <CalendarHeatmap
-                startDate={shiftDate(today, -(settings.heatmapWeeks || 12) * 7)}
-                endDate={today}
-                onClick={(value) => value && onCickDate(value.date)}
-                values={values}
-                gutterSize={settings.heatmapCellGutter || 0}
-                transformDayElement={transformDayElement}
-                classForValue={(value: HeatmapData) => {
-                    if (!value || value.count === 0) {
-                        return 'color-scale-0';
-                    }
-                    const standard = settings.heatmapCalculationStandard || 'charCount';
-                    const step = standard === 'fileCount' ? 
-                        (settings.heatmapFileCountStep || 1) : 
-                        (settings.heatmapCharCountStep || 1000);
-                    const numOflevels = 4;
-                    const cnt = Math.min(numOflevels, Math.ceil(value.count / step));
-                    return `color-scale-${cnt}`;
-                }}
-                tooltipDataAttrs={(value: HeatmapData): { [key: string]: string } => {
-                    const standard = settings.heatmapCalculationStandard || 'charCount';
-                    const label = standard === 'fileCount' ? 
-                        i18n.t('notes_created_at') : 
-                        i18n.t('characters_written');
-                    return {
-                        'data-tooltip-id': 'my-tooltip',
-                        'data-tooltip-content': `${value?.count || 0} ${label} ${value?.date || ''}`,
-                    };
-                }}
-                showWeekdayLabels={false}
-                monthLabels={[
-                    i18n.t('month1'), i18n.t('month2'), i18n.t('month3'),
-                    i18n.t('month4'), i18n.t('month5'), i18n.t('month6'),
-                    i18n.t('month7'), i18n.t('month8'), i18n.t('month9'),
-                    i18n.t('month10'), i18n.t('month11'), i18n.t('month12'),
-                ]}
-                showOutOfRangeDays={true}
-            />
+        <div style={{position: 'relative'}}>
+            {/* 热力图居中容器 */}
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <CalendarHeatmap
+                    startDate={shiftDate(today, -(settings.heatmapWeeks || 20) * 7)}
+                    endDate={today}
+                    onClick={(value) => value && onCickDate(value.date)}
+                    values={values}
+                    gutterSize={settings.heatmapCellGutter || 0}
+                    transformDayElement={transformDayElement}
+                    classForValue={(value: HeatmapData) => {
+                        if (!value || value.count === 0) {
+                            return 'color-scale-0';
+                        }
+                        const standard = settings.heatmapCalculationStandard || 'charCount';
+                        const step = standard === 'fileCount' ? 
+                            (settings.heatmapFileCountStep || 1) : 
+                            (settings.heatmapCharCountStep || 1000);
+                        const numOflevels = 4;
+                        const cnt = Math.min(numOflevels, Math.ceil(value.count / step));
+                        return `color-scale-${cnt}`;
+                    }}
+                    tooltipDataAttrs={(value: HeatmapData): { [key: string]: string } => {
+                        const standard = settings.heatmapCalculationStandard || 'charCount';
+                        const label = standard === 'fileCount' ? 
+                            i18n.t('notes_created_at') : 
+                            i18n.t('characters_written');
+                        return {
+                            'data-tooltip-id': 'my-tooltip',
+                            'data-tooltip-content': `${value?.count || 0} ${label} ${value?.date || ''}`,
+                        };
+                    }}
+                    showWeekdayLabels={false}
+                    monthLabels={[
+                        i18n.t('month1'), i18n.t('month2'), i18n.t('month3'),
+                        i18n.t('month4'), i18n.t('month5'), i18n.t('month6'),
+                        i18n.t('month7'), i18n.t('month8'), i18n.t('month9'),
+                        i18n.t('month10'), i18n.t('month11'), i18n.t('month12'),
+                    ]}
+                    showOutOfRangeDays={true}
+                />
+            </div>
             <Tooltip id="my-tooltip" className="heatmap-tooltip" />
+            
+            {/* 热力图图例 */}
+            <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'flex-end', 
+                marginTop: '-2px',
+                fontSize: '10px',
+                color: 'var(--text-normal)'
+            }}>
+                <span style={{ marginRight: '5px' }}>less</span>
+                <div style={{ 
+                    display: 'flex', 
+                    gap: `${(settings.heatmapCellGutter || 0) + 1.5}px`,
+                    marginRight: '5px'
+                }}>
+                    <div style={{ 
+                        width: `${(settings.heatmapCellSize || 7)}px`, 
+                        height: `${(settings.heatmapCellSize || 7)}px`, 
+                        borderRadius: `${settings.heatmapCellRadius || 2}px`,
+                        backgroundColor: isDarkMode ? '#333333' : '#e0d2b3',
+                    }} />
+                    {getColors().map((color, index) => (
+                        <div 
+                            key={index} 
+                            style={{ 
+                                width: `${(settings.heatmapCellSize || 7)}px`, 
+                                height: `${(settings.heatmapCellSize || 7)}px`, 
+                                borderRadius: `${settings.heatmapCellRadius || 2}px`,
+                                backgroundColor: color,
+                            }} 
+                        />
+                    ))}
+                </div>
+                <span style={{ marginRight: '5px' }}>more</span>
+            </div>
         </div>
     );
 }
