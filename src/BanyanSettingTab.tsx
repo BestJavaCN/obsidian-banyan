@@ -394,6 +394,17 @@ export class BanyanSettingTab extends PluginSettingTab {
 						}
 					});
 			});
+		
+		// 显示超出范围的日期
+		new Setting(containerEl)
+			.setName('显示超出范围的日期')
+			.setDesc('是否显示超出设置周数范围的日期 (默认: 否)')
+			.addToggle(toggle => {
+				toggle.setValue(settings.heatmapShowOutOfRangeDays ?? false)
+					.onChange(async (value) => {
+						useCombineStore.getState().updateHeatmapShowOutOfRangeDays(value);
+					});
+			});
 	}
 
 }

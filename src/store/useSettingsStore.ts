@@ -31,13 +31,14 @@ export interface SettingsState {
     updateCustomNewNoteLocation: (directory: string) => void;
 
     // heatmap settings
-    updateHeatmapCalculationStandard: (standard: 'fileCount' | 'charCount') => void;
-    updateHeatmapFileCountStep: (step: number) => void;
-    updateHeatmapCharCountStep: (step: number) => void;
-    updateHeatmapWeeks: (weeks: number) => void;
-    updateHeatmapCellRadius: (radius: number) => void;
-    updateHeatmapCellSize: (size: number) => void;
-    updateHeatmapCellGutter: (gutter: number) => void;
+	updateHeatmapCalculationStandard: (standard: 'fileCount' | 'charCount') => void;
+	updateHeatmapFileCountStep: (step: number) => void;
+	updateHeatmapCharCountStep: (step: number) => void;
+	updateHeatmapWeeks: (weeks: number) => void;
+	updateHeatmapCellRadius: (radius: number) => void;
+	updateHeatmapCellSize: (size: number) => void;
+	updateHeatmapCellGutter: (gutter: number) => void;
+	updateHeatmapShowOutOfRangeDays: (show: boolean) => void;
 	updateHeatmapColorScheme: (scheme: string) => void;
 
     // UI state updates
@@ -144,11 +145,14 @@ export const useSettingsStore: StateCreator<CombineState, [], [], SettingsState>
         get().updateSettings({ heatmapCellRadius: radius });
     },
     updateHeatmapCellSize: (size: number) => {
-        get().updateSettings({ heatmapCellSize: size });
-    },
-    updateHeatmapCellGutter: (gutter: number) => {
-        get().updateSettings({ heatmapCellGutter: gutter });
-    },
+			get().updateSettings({ heatmapCellSize: size });
+		},
+		updateHeatmapCellGutter: (gutter: number) => {
+			get().updateSettings({ heatmapCellGutter: gutter });
+		},
+		updateHeatmapShowOutOfRangeDays: (show: boolean) => {
+			get().updateSettings({ heatmapShowOutOfRangeDays: show });
+		},
     updateHeatmapColorScheme: (scheme: string) => {
         get().updateSettings({ heatmapColorScheme: scheme });
     },

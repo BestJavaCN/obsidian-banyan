@@ -16,13 +16,28 @@ export type HeatmapData = {
 export const Heatmap = ({ onCickDate }: {
     onCickDate: (date: string) => void
 }) => {
-    const today = new Date();
+    // 使用useState存储今天的日期，并在组件挂载后定期更新
+    const [today, setToday] = useState(new Date());
     const sortType = useCombineStore((state) => state.appData.sortType);
     const allFiles = useCombineStore((state) => state.allFiles);
     const plugin = useCombineStore((state) => state.plugin);
     const settings = useCombineStore((state) => state.settings);
     const [values, setValues] = useState<HeatmapData[]>([]);
     const [isDarkMode, setIsDarkMode] = useState(false);
+    
+    // 定期更新today状态，确保日期始终是最新的
+    useEffect(() => {
+        // 初始更新
+        setToday(new Date());
+        
+        // 每分钟检查一次日期是否变化
+        const intervalId = setInterval(() => {
+            setToday(new Date());
+        }, 60000);
+        
+        // 清理函数
+        return () => clearInterval(intervalId);
+    }, []);
 
     // 配色方案定义
     const colorSchemes = {
@@ -94,12 +109,30 @@ export const Heatmap = ({ onCickDate }: {
             
             // 生成所有日期的数据
             const weeksToShow = settings.heatmapWeeks || 20;
-            const startDate = shiftDate(today, -weeksToShow * 7);
+            
+            // 计算正确的开始日期，确保只显示指定的周数
+            // 逻辑：今天是第N周的第D天，我们需要显示从第(N-19)周的第1天到今天的所有日期
+            // 这样可以确保显示正好20周（20列）的数据
+            const todayDayOfWeek = today.getDay(); // 0 = 周日, 1 = 周一, ..., 6 = 周六
+            // 计算从今天开始回溯的天数：(weeksToShow - 1)周完整的天数 + 今天是周几 + 1
+            // +1 是因为周日是0，但它是一周的第一天，需要算上今天这一天
+            const daysToBacktrack = (weeksToShow - 1) * 7 + todayDayOfWeek + 1;
+            
+            // 根据是否显示超出范围的日期，调整数据生成范围
+            const startDate = shiftDate(today, -daysToBacktrack);
+            // 如果显示超出范围的日期，我们需要生成更多的数据
+            // 向前多生成1周，向后多生成1周，确保覆盖热力图可能显示的所有单元格
+            const extendedStartDate = shiftDate(startDate, -7); // 向前多1周
+            const extendedEndDate = shiftDate(today, 7); // 向后多1周
+            
             const allDates: HeatmapData[] = [];
             
-            const currentDate = new Date(startDate);
-            while (currentDate <= today) {
-                const dateStr = currentDate.toISOString().split('T')[0];
+            // 生成从扩展开始日期到扩展结束日期的所有日期数据
+            // 这样当显示超出范围的日期时，鼠标指向这些单元格也能显示正确的数据
+            const currentDate = new Date(extendedStartDate);
+            while (currentDate <= extendedEndDate) {
+                // 使用与getHeatmapValues相同的日期格式，确保匹配
+                const dateStr = moment(currentDate).format('YYYY-MM-DD');
                 allDates.push({
                     date: dateStr,
                     count: valueMap.get(dateStr) || 0
@@ -107,10 +140,21 @@ export const Heatmap = ({ onCickDate }: {
                 currentDate.setDate(currentDate.getDate() + 1);
             }
             
+            // 打印调试信息，确认数据生成正确
+            console.log('Heatmap data generated:', {
+                today: moment(today).format('YYYY-MM-DD'),
+                todayDayOfWeek: todayDayOfWeek,
+                daysToBacktrack: daysToBacktrack,
+                startDate: moment(startDate).format('YYYY-MM-DD'),
+                totalDays: allDates.length,
+                expectedWeeks: weeksToShow,
+                lastDate: allDates.length > 0 ? allDates[allDates.length - 1].date : 'N/A'
+            });
+            
             setValues(allDates);
         };
         fetchHeatmapValues();
-    }, [allFiles, sortType, plugin, settings.heatmapCalculationStandard, settings.heatmapWeeks]);
+    }, [allFiles, sortType, plugin, settings.heatmapCalculationStandard, settings.heatmapWeeks, today]);
 
     // 动态生成热力图样式
     useEffect(() => {
@@ -217,12 +261,26 @@ export const Heatmap = ({ onCickDate }: {
             {/* 热力图居中容器 */}
             <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <CalendarHeatmap
-                    startDate={shiftDate(today, -(settings.heatmapWeeks || 20) * 7)}
+                    // 计算开始日期，确保只显示指定的周数
+                    // 使用与数据生成相同的开始日期计算方法
+                    startDate={(() => {
+                        const weeksToShow = settings.heatmapWeeks || 20;
+                        const todayDayOfWeek = today.getDay();
+                        // +1 是因为周日是0，但它是一周的第一天，需要算上今天这一天
+                        const daysToBacktrack = (weeksToShow - 1) * 7 + todayDayOfWeek + 1;
+                        return shiftDate(today, -daysToBacktrack);
+                    })()}
+                    // 结束日期设置为今天，确保不显示未来日期
                     endDate={today}
+                    // 点击事件处理
                     onClick={(value) => value && onCickDate(value.date)}
+                    // 传递数据
                     values={values}
+                    // 单元格间距
                     gutterSize={settings.heatmapCellGutter || 0}
+                    // 自定义单元格样式
                     transformDayElement={transformDayElement}
+                    // 根据值设置样式类
                     classForValue={(value: HeatmapData) => {
                         if (!value || value.count === 0) {
                             return 'color-scale-0';
@@ -235,7 +293,16 @@ export const Heatmap = ({ onCickDate }: {
                         const cnt = Math.min(numOflevels, Math.ceil(value.count / step));
                         return `color-scale-${cnt}`;
                     }}
+                    // 自定义tooltip内容
                     tooltipDataAttrs={(value: HeatmapData): { [key: string]: string } => {
+                        // 确保value存在且有date属性
+                        if (!value || !value.date) {
+                            return {
+                                'data-tooltip-id': 'my-tooltip',
+                                'data-tooltip-content': 'No data',
+                            };
+                        }
+                        
                         const standard = settings.heatmapCalculationStandard || 'charCount';
                         const label = standard === 'fileCount' ? 
                             i18n.t('notes_created_at') : 
@@ -252,7 +319,7 @@ export const Heatmap = ({ onCickDate }: {
                         i18n.t('month7'), i18n.t('month8'), i18n.t('month9'),
                         i18n.t('month10'), i18n.t('month11'), i18n.t('month12'),
                     ]}
-                    showOutOfRangeDays={true}
+                    showOutOfRangeDays={settings.heatmapShowOutOfRangeDays || false}
                 />
             </div>
             <Tooltip id="my-tooltip" className="heatmap-tooltip" />

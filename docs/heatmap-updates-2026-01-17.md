@@ -817,13 +817,241 @@ this.setupHeatmapCellSettings(containerEl);
 
 6. **用户体验优化**：提供预设配色方案、灵活的周数设置、一致的悬停提示等功能
 
+### 7. 添加热力图显示超出范围日期设置项
+
+**文件**: `src/BanyanPluginSettings.ts`
+
+**修改内容**:
+
+```typescript
+// 修改前
+// 热力图设置
+heatmapCalculationStandard?: 'fileCount' | 'charCount';
+heatmapFileCountStep?: number;
+heatmapCharCountStep?: number;
+heatmapColorScheme?: string; // 配色方案名称
+heatmapWeeks?: number; // 显示的周数
+heatmapCellRadius?: number;
+heatmapCellSize?: number;
+heatmapCellGutter?: number;
+
+// 修改后
+// 热力图设置
+heatmapCalculationStandard?: 'fileCount' | 'charCount';
+heatmapFileCountStep?: number;
+heatmapCharCountStep?: number;
+heatmapColorScheme?: string; // 配色方案名称
+heatmapWeeks?: number; // 显示的周数
+heatmapCellRadius?: number;
+heatmapCellSize?: number;
+heatmapCellGutter?: number;
+heatmapShowOutOfRangeDays?: boolean; // 是否显示超出范围的日期
+
+// 修改前（默认设置）
+// heatmap
+heatmapCalculationStandard: 'charCount',
+heatmapFileCountStep: 1,
+heatmapCharCountStep: 1000,
+heatmapColorScheme: 'github',
+heatmapWeeks: 20, // 默认显示20周
+heatmapCellRadius: 2,
+heatmapCellSize: 7,
+heatmapCellGutter: 0,
+
+// 修改后（默认设置）
+// heatmap
+heatmapCalculationStandard: 'charCount',
+heatmapFileCountStep: 1,
+heatmapCharCountStep: 1000,
+heatmapColorScheme: 'github',
+heatmapWeeks: 20, // 默认显示20周
+heatmapCellRadius: 2,
+heatmapCellSize: 7,
+heatmapCellGutter: 0,
+heatmapShowOutOfRangeDays: false, // 是否显示超出范围的日期
+```
+
+**文件**: `src/store/useSettingsStore.ts`
+
+**修改内容**:
+
+```typescript
+// 修改前
+// heatmap settings
+updateHeatmapCalculationStandard: (standard: 'fileCount' | 'charCount') => void;
+updateHeatmapFileCountStep: (step: number) => void;
+updateHeatmapCharCountStep: (step: number) => void;
+updateHeatmapWeeks: (weeks: number) => void;
+updateHeatmapCellRadius: (radius: number) => void;
+updateHeatmapCellSize: (size: number) => void;
+updateHeatmapCellGutter: (gutter: number) => void;
+updateHeatmapColorScheme: (scheme: string) => void;
+
+// 修改后
+// heatmap settings
+updateHeatmapCalculationStandard: (standard: 'fileCount' | 'charCount') => void;
+updateHeatmapFileCountStep: (step: number) => void;
+updateHeatmapCharCountStep: (step: number) => void;
+updateHeatmapWeeks: (weeks: number) => void;
+updateHeatmapCellRadius: (radius: number) => void;
+updateHeatmapCellSize: (size: number) => void;
+updateHeatmapCellGutter: (gutter: number) => void;
+updateHeatmapShowOutOfRangeDays: (show: boolean) => void;
+updateHeatmapColorScheme: (scheme: string) => void;
+
+// 修改前（实现部分）
+updateHeatmapCellSize: (size: number) => {
+	get().updateSettings({ heatmapCellSize: size });
+},
+updateHeatmapCellGutter: (gutter: number) => {
+	get().updateSettings({ heatmapCellGutter: gutter });
+},
+
+// 修改后（实现部分）
+updateHeatmapCellSize: (size: number) => {
+	get().updateSettings({ heatmapCellSize: size });
+},
+updateHeatmapCellGutter: (gutter: number) => {
+	get().updateSettings({ heatmapCellGutter: gutter });
+},
+updateHeatmapShowOutOfRangeDays: (show: boolean) => {
+	get().updateSettings({ heatmapShowOutOfRangeDays: show });
+},
+```
+
+**文件**: `src/BanyanSettingTab.tsx`
+
+**修改内容**:
+
+```typescript
+// 新增：显示超出范围的日期设置
+// 单元格间距
+new Setting(containerEl)
+	.setName('热力图单元格间距')
+	.setDesc('设置热力图色块之间的间距 (px) (默认: 0px)')
+	.addText(text => {
+		text.setValue((settings.heatmapCellGutter ?? 0).toString())
+			.onChange(async (value) => {
+				const gutter = parseInt(value);
+				if (!isNaN(gutter) && gutter >= 0) {
+					useCombineStore.getState().updateHeatmapCellGutter(gutter);
+				}
+			});
+	});
+
+// 显示超出范围的日期
+new Setting(containerEl)
+	.setName('显示超出范围的日期')
+	.setDesc('是否显示超出设置周数范围的日期 (默认: 否)')
+	.addToggle(toggle => {
+		toggle.setValue(settings.heatmapShowOutOfRangeDays ?? false)
+			.onChange(async (value) => {
+				useCombineStore.getState().updateHeatmapShowOutOfRangeDays(value);
+			});
+	});
+```
+
+**文件**: `src/pages/sidebar/heatmap/Heatmap.tsx`
+
+**修改内容**:
+
+```typescript
+// 修改前：生成所有日期的数据
+const weeksToShow = settings.heatmapWeeks || 20;
+
+// 计算正确的开始日期，确保只显示指定的周数
+// 逻辑：今天是第N周的第D天，我们需要显示从第(N-19)周的第1天到今天的所有日期
+// 这样可以确保显示正好20周（20列）的数据
+const todayDayOfWeek = today.getDay(); // 0 = 周日, 1 = 周一, ..., 6 = 周六
+// 计算从今天开始回溯的天数：(weeksToShow - 1)周完整的天数 + 今天是周几 + 1
+// +1 是因为周日是0，但它是一周的第一天，需要算上今天这一天
+const daysToBacktrack = (weeksToShow - 1) * 7 + todayDayOfWeek + 1;
+const startDate = shiftDate(today, -daysToBacktrack);
+
+const allDates: HeatmapData[] = [];
+
+// 生成从开始日期到今天的所有日期数据
+const currentDate = new Date(startDate);
+while (currentDate <= today) {
+	// 使用与getHeatmapValues相同的日期格式，确保匹配
+	const dateStr = moment(currentDate).format('YYYY-MM-DD');
+	allDates.push({
+		date: dateStr,
+		count: valueMap.get(dateStr) || 0
+	});
+	currentDate.setDate(currentDate.getDate() + 1);
+}
+
+// 修改后：生成所有日期的数据，包括超出范围的日期
+const weeksToShow = settings.heatmapWeeks || 20;
+
+// 计算正确的开始日期，确保只显示指定的周数
+// 逻辑：今天是第N周的第D天，我们需要显示从第(N-19)周的第1天到今天的所有日期
+// 这样可以确保显示正好20周（20列）的数据
+const todayDayOfWeek = today.getDay(); // 0 = 周日, 1 = 周一, ..., 6 = 周六
+// 计算从今天开始回溯的天数：(weeksToShow - 1)周完整的天数 + 今天是周几 + 1
+// +1 是因为周日是0，但它是一周的第一天，需要算上今天这一天
+const daysToBacktrack = (weeksToShow - 1) * 7 + todayDayOfWeek + 1;
+
+// 根据是否显示超出范围的日期，调整数据生成范围
+const startDate = shiftDate(today, -daysToBacktrack);
+// 如果显示超出范围的日期，我们需要生成更多的数据
+// 向前多生成1周，向后多生成1周，确保覆盖热力图可能显示的所有单元格
+const extendedStartDate = shiftDate(startDate, -7); // 向前多1周
+const extendedEndDate = shiftDate(today, 7); // 向后多1周
+
+const allDates: HeatmapData[] = [];
+
+// 生成从扩展开始日期到扩展结束日期的所有日期数据
+// 这样当显示超出范围的日期时，鼠标指向这些单元格也能显示正确的数据
+const currentDate = new Date(extendedStartDate);
+while (currentDate <= extendedEndDate) {
+	// 使用与getHeatmapValues相同的日期格式，确保匹配
+	const dateStr = moment(currentDate).format('YYYY-MM-DD');
+	allDates.push({
+		date: dateStr,
+		count: valueMap.get(dateStr) || 0
+	});
+	currentDate.setDate(currentDate.getDate() + 1);
+}
+
+// 修改前：CalendarHeatmap组件配置
+showOutOfRangeDays={false}
+
+// 修改后：CalendarHeatmap组件配置
+showOutOfRangeDays={settings.heatmapShowOutOfRangeDays || false}
+```
+
+**修改原因**:
+- 允许用户选择是否显示超出设置周数范围的日期，提供更灵活的热力图显示选项
+- 当显示超出范围的日期时，确保这些日期也能显示正确的日期和统计数据
+- 保持向后兼容，默认值为false，与之前的行为一致
+- 提供更好的用户体验，让用户可以根据自己的需求调整热力图的显示范围
+
+## 技术要点总结
+
+1. **动态样式生成**：使用 `useEffect` 和动态创建的 `<style>` 标签，实现配色方案和主题的实时更新
+
+2. **主题检测**：使用 `MutationObserver` 监听主题变化，实现自动反色功能
+
+3. **状态管理**：使用 Zustand 管理插件设置，确保设置的持久化和实时更新
+
+4. **数据处理**：生成完整的日期数据，确保所有日期（包括超出范围的日期）都有对应的悬停提示
+
+5. **响应式设计**：确保热力图在不同设备上都能正常显示，解决移动端颜色显示问题
+
+6. **用户体验优化**：提供预设配色方案、灵活的周数设置、一致的悬停提示等功能
+
+7. **扩展数据范围**：当显示超出范围的日期时，通过扩展日期数据范围，确保所有单元格都能显示正确的信息
+
 ## 最终效果
 
 1. **热力图配色**：支持5种预设配色方案，在浅色和深色模式下自动反色
 2. **设置简化**：移除了手动颜色设置项，简化了设置界面
-3. **周数控制**：用户可以自定义热力图显示的周数（1-52周）
-4. **悬停提示**：所有日期（包括无数据的日期）都有悬停提示
+3. **周数控制**：用户可以自定义热力图显示的周数（1-52周），默认20周
+4. **悬停提示**：所有日期（包括无数据的日期和超出范围的日期）都有悬停提示
 5. **设置顺序**：优化了设置项的逻辑顺序
 6. **移动端优化**：解决了移动端无数据色块不可见和月份标签不反色的问题
+7. **超出范围日期控制**：用户可以选择是否显示超出设置周数范围的日期
 
 这些修改不仅实现了所有需求，还提高了插件的整体用户体验和稳定性。

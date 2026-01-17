@@ -362,7 +362,8 @@
            i18n.t('month7'), i18n.t('month8'), i18n.t('month9'),
            i18n.t('month10'), i18n.t('month11'), i18n.t('month12'),
        ]}
-       showOutOfRangeDays={true}
+       /* 隐藏超出范围的日期 */
+       showOutOfRangeDays={false}
    />
    ```
 

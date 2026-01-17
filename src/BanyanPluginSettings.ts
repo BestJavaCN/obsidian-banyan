@@ -29,6 +29,7 @@ export interface BanyanPluginSettings {
 	heatmapCellRadius?: number;
 	heatmapCellSize?: number;
 	heatmapCellGutter?: number;
+	heatmapShowOutOfRangeDays?: boolean; // 是否显示超出范围的日期
 
 }
 
@@ -65,5 +66,6 @@ export const DEFAULT_SETTINGS: BanyanPluginSettings = {
 	heatmapCellRadius: 2,
 	heatmapCellSize: 7,
 	heatmapCellGutter: 0,
+	heatmapShowOutOfRangeDays: false, // 是否显示超出范围的日期
 
 }
