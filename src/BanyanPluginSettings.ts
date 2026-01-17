@@ -61,9 +61,9 @@ export const DEFAULT_SETTINGS: BanyanPluginSettings = {
 	heatmapFileCountStep: 1,
 	heatmapCharCountStep: 1000,
 	heatmapColorScheme: 'github',
-	heatmapWeeks: 12, // 默认显示12周
+	heatmapWeeks: 20, // 默认显示20周
 	heatmapCellRadius: 2,
-	heatmapCellSize: 6,
+	heatmapCellSize: 7,
 	heatmapCellGutter: 0,
 
 }

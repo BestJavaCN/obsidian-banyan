@@ -338,9 +338,9 @@ export class BanyanSettingTab extends PluginSettingTab {
 		const settings = useCombineStore.getState().settings;
 		new Setting(containerEl)
 			.setName('热力图显示周数')
-			.setDesc('设置热力图显示的周数 (默认: 12)')
+			.setDesc('设置热力图显示的周数 (默认: 20)')
 			.addText(text => {
-				text.setValue((settings.heatmapWeeks ?? 12).toString())
+				text.setValue((settings.heatmapWeeks ?? 20).toString())
 					.onChange(async (value) => {
 						const weeks = parseInt(value);
 						if (!isNaN(weeks) && weeks > 0 && weeks <= 52) {
@@ -370,9 +370,9 @@ export class BanyanSettingTab extends PluginSettingTab {
 		// 单元格大小
 		new Setting(containerEl)
 			.setName('热力图单元格大小')
-			.setDesc('设置热力图色块的大小 (px) (默认: 6px)')
+			.setDesc('设置热力图色块的大小 (px) (默认: 7px)')
 			.addText(text => {
-				text.setValue((settings.heatmapCellSize ?? 6).toString())
+				text.setValue((settings.heatmapCellSize ?? 7).toString())
 					.onChange(async (value) => {
 						const size = parseInt(value);
 						if (!isNaN(size) && size > 0) {
