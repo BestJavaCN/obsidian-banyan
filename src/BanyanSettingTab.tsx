@@ -46,8 +46,8 @@ export class BanyanSettingTab extends PluginSettingTab {
 		new Setting(containerEl).setName(i18n.t('setting_header_heatmap')).setHeading();
 		this.setupHeatmapColorSchemeSetting(containerEl);
 		this.setupHeatmapCalculationStandardSetting(containerEl);
-		this.setupHeatmapWeeksSetting(containerEl);
 		this.setupHeatmapStepSettings(containerEl);
+		this.setupHeatmapWeeksSetting(containerEl);
 		this.setupHeatmapCellSettings(containerEl);
 	}
 
