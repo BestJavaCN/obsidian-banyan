@@ -1,5 +1,9 @@
 ### Changelog
 
+### 1.4.2
+
+Fix: Extra shadow in card note content on mobile.
+
 ### 1.4.1
 
 Fix: Extra padding of card note view on mobile.
