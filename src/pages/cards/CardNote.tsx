@@ -1,4 +1,4 @@
-import { App, WorkspaceLeaf, MarkdownView, Platform } from "obsidian";
+import { App, WorkspaceLeaf, MarkdownView, Platform, TFile } from "obsidian";
 import * as React from "react";
 import { CardNoteMenuButton, openCardNoteMoreMenu } from "./CardNoteMenu";
 import { i18n } from "src/utils/i18n";
@@ -16,6 +16,29 @@ const NoteContentView = ({ app, fileInfo }: { app: App, fileInfo: FileInfo }) =>
   const cardContentMaxHeight = useCombineStore((state) => state.settings.cardContentMaxHeight);
   const fontTheme = useCombineStore((state) => state.settings.fontTheme);
 
+  const resetLeafState = async () => {
+    if (!leaf.current) return;
+    try {
+      // 重新打开文件以重置状态
+      await (leaf.current as WorkspaceLeaf).openFile(fileInfo.file);
+      if (!(leaf.current.view instanceof MarkdownView)) {
+        console.log('视图初始化失败或类型不正确', fileInfo.file.name);
+        return;
+      }
+      // 重置为预览模式并清空历史
+      await leaf.current.view.setState(
+        { ...leaf.current.view.getState(), mode: 'preview', scroll: { x: 0, y: 0 } },
+        { history: false }
+      );
+      // 重置滚动位置
+      const contentEl = ref.current?.querySelector('.view-content');
+      if (contentEl) {
+        contentEl.scrollTop = 0;
+        contentEl.scrollLeft = 0;
+      }
+    } catch (e) { console.log('重置视图失败', e, fileInfo) };
+  };
+
   React.useEffect(() => {
     const setupView = async () => {
       if (!ref.current) return;
@@ -26,14 +49,35 @@ const NoteContentView = ({ app, fileInfo }: { app: App, fileInfo: FileInfo }) =>
           return;
         }
         await leaf.current.view.setState(
-          { ...leaf.current.view.getState(), mode: 'preview' },
-          { history: false })
+          { ...leaf.current.view.getState(), mode: 'preview', scroll: { x: 0, y: 0 } },
+          { history: false }
+        );
         ref.current?.empty();
         ref.current?.appendChild(leaf.current.containerEl);
+        
+        // 重置滚动位置
+        const contentEl = ref.current?.querySelector('.view-content');
+        if (contentEl) {
+          contentEl.scrollTop = 0;
+          contentEl.scrollLeft = 0;
+        }
       } catch (e) { console.log('打开文件失败', e, fileInfo) };
     };
     setupView();
   }, [fileInfo.file.path]);
+
+  // 监听活动 leaf 变化事件，重置卡片状态
+  React.useEffect(() => {
+    const handleActiveLeafChange = (leaf: WorkspaceLeaf | null) => {
+      // 当活动 leaf 改变时，重置当前卡片的状态
+      resetLeafState();
+    };
+
+    app.workspace.on('active-leaf-change', handleActiveLeafChange);
+    return () => {
+      app.workspace.off('active-leaf-change', handleActiveLeafChange);
+    };
+  }, [app]);
 
   // Cleanup leaf on unmount
   React.useEffect(() => {
@@ -42,7 +86,7 @@ const NoteContentView = ({ app, fileInfo }: { app: App, fileInfo: FileInfo }) =>
         leaf.current.detach();
         leaf.current = null;
       }
-    }
+    };
   }, []);
 
   React.useEffect(() => {
