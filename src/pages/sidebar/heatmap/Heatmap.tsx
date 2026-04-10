@@ -314,10 +314,8 @@ export const Heatmap = ({ onCickDate }: {
                     }}
                     showWeekdayLabels={false}
                     monthLabels={[
-                        i18n.t('month1'), i18n.t('month2'), i18n.t('month3'),
-                        i18n.t('month4'), i18n.t('month5'), i18n.t('month6'),
-                        i18n.t('month7'), i18n.t('month8'), i18n.t('month9'),
-                        i18n.t('month10'), i18n.t('month11'), i18n.t('month12'),
+                        '1月', '2月', '3月', '4月', '5月', '6月',
+                        '7月', '8月', '9月', '10月', '11月', '12月'
                     ]}
                     showOutOfRangeDays={settings.heatmapShowOutOfRangeDays || false}
                 />
