@@ -27,6 +27,24 @@ const AddNoteView: React.FC<AddNoteViewProps> = ({ app, plugin, onAdd }) => {
   const [tags, setTags] = useState<string[]>([]);
   const [title, setTitle] = useState<string>('');
   const [isTitleInvalid, setIsTitleInvalid] = useState<boolean>(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // 检测当前主题模式
+  useEffect(() => {
+    const checkDarkMode = () => {
+      const isDark = document.body.hasClass('theme-dark');
+      setIsDarkMode(isDark);
+    };
+
+    // 初始检测
+    checkDarkMode();
+
+    // 监听主题变化
+    const observer = new MutationObserver(checkDarkMode);
+    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
+    return () => observer.disconnect();
+  }, []);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -163,7 +181,7 @@ const AddNoteView: React.FC<AddNoteViewProps> = ({ app, plugin, onAdd }) => {
             setTitle('');
             onAdd();
             new Notice(i18n.t('new_note_added'));
-          }}><Icon name="send-horizontal" size="l" color="var(--text-on-accent)" /></button>
+          }}><Icon name="send-horizontal" size="l" color={isDarkMode ? '#ECE1C4' : '#665C54'} /></button>
       </div>
     </div>
   );

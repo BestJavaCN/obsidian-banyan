@@ -20,11 +20,16 @@ export interface BanyanPluginSettings {
 	newNoteLocationMode?: NewNoteLocationMode;
 	customNewNoteLocation?: string;
 
+	// editor placeholder
+	customEditorPlaceholderPath?: string;
+
 	// 热力图设置
 	heatmapCalculationStandard?: 'fileCount' | 'charCount';
 	heatmapFileCountStep?: number;
 	heatmapCharCountStep?: number;
-	heatmapColorScheme?: string; // 配色方案名称
+	heatmapColorScheme?: string; // 配色方案名称（兼容旧版本）
+	heatmapLightColorScheme?: string; // 亮色模式配色方案
+	heatmapDarkColorScheme?: string; // 暗色模式配色方案
 	heatmapWeeks?: number; // 显示的周数
 	heatmapCellRadius?: number;
 	heatmapCellSize?: number;
@@ -33,7 +38,7 @@ export interface BanyanPluginSettings {
 
 }
 
-export const CUR_SETTINGS_VERSION = 8;
+export const CUR_SETTINGS_VERSION = 9;
 
 
 
@@ -57,11 +62,16 @@ export const DEFAULT_SETTINGS: BanyanPluginSettings = {
 	newNoteLocationMode: 'current',
 	customNewNoteLocation: '',
 
+	// editor placeholder
+	customEditorPlaceholderPath: '',
+
 	// heatmap
 	heatmapCalculationStandard: 'charCount',
 	heatmapFileCountStep: 1,
 	heatmapCharCountStep: 1000,
 	heatmapColorScheme: 'github',
+	heatmapLightColorScheme: 'github',
+	heatmapDarkColorScheme: 'github',
 	heatmapWeeks: 20, // 默认显示20周
 	heatmapCellRadius: 2,
 	heatmapCellSize: 7,

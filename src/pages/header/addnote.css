@@ -91,7 +91,11 @@
 .add-note-send-button {
     padding: 6px 15px;
     background: var(--interactive-accent);
-    color: var(--text-on-accent);
+    color: #665C54;
+}
+
+.theme-dark .add-note-send-button {
+    color: #ECE1C4;
 }
 
 .add-note-send-button:hover {

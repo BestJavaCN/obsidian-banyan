@@ -87,7 +87,9 @@ export const Heatmap = ({ onCickDate }: {
 
     // 根据配色方案和主题模式获取颜色
     const getColors = () => {
-        const schemeName = settings.heatmapColorScheme || 'github';
+        const schemeName = isDarkMode 
+            ? (settings.heatmapDarkColorScheme || settings.heatmapColorScheme || 'github')
+            : (settings.heatmapLightColorScheme || settings.heatmapColorScheme || 'github');
         const scheme = colorSchemes[schemeName as keyof typeof colorSchemes] || colorSchemes.github;
         
         // 深色模式下反转颜色顺序
@@ -141,15 +143,15 @@ export const Heatmap = ({ onCickDate }: {
             }
             
             // 打印调试信息，确认数据生成正确
-            console.log('Heatmap data generated:', {
-                today: moment(today).format('YYYY-MM-DD'),
-                todayDayOfWeek: todayDayOfWeek,
-                daysToBacktrack: daysToBacktrack,
-                startDate: moment(startDate).format('YYYY-MM-DD'),
-                totalDays: allDates.length,
-                expectedWeeks: weeksToShow,
-                lastDate: allDates.length > 0 ? allDates[allDates.length - 1].date : 'N/A'
-            });
+            // console.log('Heatmap data generated:', {
+            //     today: moment(today).format('YYYY-MM-DD'),
+            //     todayDayOfWeek: todayDayOfWeek,
+            //     daysToBacktrack: daysToBacktrack,
+            //     startDate: moment(startDate).format('YYYY-MM-DD'),
+            //     totalDays: allDates.length,
+            //     expectedWeeks: weeksToShow,
+            //     lastDate: allDates.length > 0 ? allDates[allDates.length - 1].date : 'N/A'
+            // });
             
             setValues(allDates);
         };
@@ -241,6 +243,8 @@ export const Heatmap = ({ onCickDate }: {
         settings.heatmapCellRadius,
         settings.heatmapCellSize,
         settings.heatmapColorScheme,
+        settings.heatmapLightColorScheme,
+        settings.heatmapDarkColorScheme,
         isDarkMode
     ]);
     // 自定义转换函数，用于控制色块的大小和样式

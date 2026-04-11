@@ -53,24 +53,58 @@ export class FileUtils {
   }
 
   getFullPlaceholderFilePath() {
+    if (this.plugin.settings.customEditorPlaceholderPath) {
+      let path = this.plugin.settings.customEditorPlaceholderPath;
+      // 确保路径是一个文件路径，而不是目录路径
+      if (!path.endsWith('.md')) {
+        // 如果路径以/结尾，直接添加文件名
+        if (path.endsWith('/')) {
+          path += PlaceholderFileName;
+        } else {
+          // 否则，添加斜杠和文件名
+          path += `/${PlaceholderFileName}`;
+        }
+      }
+      return normalizePath(path);
+    }
     return normalizePath(`${this.dir}/${PlaceholderFilePath}`);
   }
 
   async getPlaceholderFile() {
-    const path = this.getFullPlaceholderFilePath();
-    const file = this.app.vault.getFileByPath(path);
-    if (file) return file;
-    await this.ensureDirectoryExists(`${this.dir}/${PlaceholderDirectory}`);
-    const exists1 = await this.app.vault.adapter.exists(path);
-    console.log('占位文件', exists1, "创建", path);
     try {
+      const path = this.getFullPlaceholderFilePath();
+      
+      const file = this.app.vault.getFileByPath(path);
+      if (file) {
+        return file;
+      }
+      
+      // 确保目录存在
+      const lastSlashIndex = path.lastIndexOf('/');
+      if (lastSlashIndex > -1) {
+        const directory = path.substring(0, lastSlashIndex);
+        await this.ensureDirectoryExists(directory);
+      }
+      
       const res = await this.app.vault.create(path, "");
-      const exists2 = await this.app.vault.adapter.exists(path);
-      console.log('占位文件创建后', exists2);
       return res;
     } catch (e) {
-      console.error('创建占位文件失败', e);
-      throw e;
+      // 当创建失败时，返回默认路径的占位文件
+      try {
+        const defaultPath = normalizePath(`${this.dir}/${PlaceholderFilePath}`);
+        
+        const defaultFile = this.app.vault.getFileByPath(defaultPath);
+        if (defaultFile) {
+          return defaultFile;
+        }
+        
+        // 确保默认目录存在
+        await this.ensureDirectoryExists(`${this.dir}/${PlaceholderDirectory}`);
+        const defaultRes = await this.app.vault.create(defaultPath, "");
+        return defaultRes;
+      } catch (defaultError) {
+        throw defaultError;
+      }
     }
   }
 

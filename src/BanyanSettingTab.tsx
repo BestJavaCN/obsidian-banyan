@@ -37,6 +37,7 @@ export class BanyanSettingTab extends PluginSettingTab {
 		this.setupNewNoteLocationSetting(containerEl);
 		this.setupUseZkPrefixerFormatSetting(containerEl);
 		this.setupShowAddNoteRibbonSetting(containerEl);
+		this.setupCustomEditorPlaceholderPathSetting(containerEl);
 
 		// 旧版清理
 		new Setting(containerEl).setName(i18n.t('setting_header_clean')).setHeading();
@@ -214,6 +215,22 @@ export class BanyanSettingTab extends PluginSettingTab {
 			});
 	}
 
+	setupCustomEditorPlaceholderPathSetting(containerEl: HTMLElement) {
+		const settings = useCombineStore.getState().settings;
+		new Setting(containerEl)
+			.setName('编辑器占位文件路径')
+			.setDesc('自定义editor_placeholder.md文件的保存路径，留空则使用默认路径')
+			.addText(text => {
+				text.setValue(settings.customEditorPlaceholderPath || "")
+					.onChange(async (value) => {
+						useCombineStore.getState().updateCustomEditorPlaceholderPath(value);
+					});
+				setTimeout(() => {
+					text.inputEl.blur();
+				}, 0);
+			});
+	}
+
 	setupCardContentMaxHeightSetting(containerEl: HTMLElement) {
 		const settings = useCombineStore.getState().settings;
 		new Setting(containerEl)
@@ -272,17 +289,32 @@ export class BanyanSettingTab extends PluginSettingTab {
 	setupHeatmapColorSchemeSetting(containerEl: HTMLElement) {
 		const settings = useCombineStore.getState().settings;
 		new Setting(containerEl)
-			.setName('热力图配色方案')
-			.setDesc('选择热力图的配色方案，在黑暗和明亮模式下会自动反色 (默认: GitHub)')
+			.setName('热力图亮色模式配色方案')
+			.setDesc('选择亮色模式下热力图的配色方案 (默认: GitHub)')
 			.addDropdown(dropdown => {
 				dropdown.addOption('github', 'GitHub (绿色)')
 					.addOption('ocean', 'Ocean (蓝色)')
 					.addOption('halloween', 'Halloween (橙色)')
 					.addOption('lovely', 'Lovely (粉色)')
 					.addOption('wine', 'Wine (红色)')
-					.setValue(settings.heatmapColorScheme ?? 'github')
+					.setValue(settings.heatmapLightColorScheme ?? settings.heatmapColorScheme ?? 'github')
 					.onChange(async (value) => {
-						useCombineStore.getState().updateHeatmapColorScheme(value);
+						useCombineStore.getState().updateHeatmapLightColorScheme(value);
+					});
+			});
+		
+		new Setting(containerEl)
+			.setName('热力图暗色模式配色方案')
+			.setDesc('选择暗色模式下热力图的配色方案 (默认: GitHub)')
+			.addDropdown(dropdown => {
+				dropdown.addOption('github', 'GitHub (绿色)')
+					.addOption('ocean', 'Ocean (蓝色)')
+					.addOption('halloween', 'Halloween (橙色)')
+					.addOption('lovely', 'Lovely (粉色)')
+					.addOption('wine', 'Wine (红色)')
+					.setValue(settings.heatmapDarkColorScheme ?? settings.heatmapColorScheme ?? 'github')
+					.onChange(async (value) => {
+						useCombineStore.getState().updateHeatmapDarkColorScheme(value);
 					});
 			});
 	}
