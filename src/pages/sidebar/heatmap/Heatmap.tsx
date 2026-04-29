@@ -183,47 +183,42 @@ export const Heatmap = ({ onCickDate }: {
                 width: ${settings.heatmapCellSize || 7}px;
                 height: ${settings.heatmapCellSize || 7}px;
             }
-            
+
             /* 确保SVG容器没有额外的间距 */
             .react-calendar-heatmap svg {
                 display: block;
                 margin: 0;
                 padding: 0;
             }
-            
-            /* 颜色样式 */
+
+            /* 无数据单元格颜色 - 使用主题变量确保可见性 */
             .react-calendar-heatmap .color-scale-0 {
-                fill: #e0d2b3;
+                fill: var(--heatmap-empty-color, var(--background-modifier-border));
             }
-            
-            /* 深色模式下的无数据色块颜色 */
-            .theme-dark .react-calendar-heatmap .color-scale-0 {
-                 fill: #333333;
-            }
-            
+
             /* 月份标签样式 */
             .react-calendar-heatmap text {
                 fill: currentColor;
                 font-size: 10px;
             }
-            
+
             /* 确保热力图容器继承正确的文本颜色 */
             .react-calendar-heatmap {
                 color: var(--text-normal);
             }
-            
+
             .react-calendar-heatmap .color-scale-1 {
                 fill: ${colors[0]};
             }
-            
+
             .react-calendar-heatmap .color-scale-2 {
                 fill: ${colors[1]};
             }
-            
+
             .react-calendar-heatmap .color-scale-3 {
                 fill: ${colors[2]};
             }
-            
+
             .react-calendar-heatmap .color-scale-4 {
                 fill: ${colors[3]};
             }
@@ -341,11 +336,11 @@ export const Heatmap = ({ onCickDate }: {
                     gap: `${(settings.heatmapCellGutter || 0) + 1.5}px`,
                     marginRight: '5px'
                 }}>
-                    <div style={{ 
-                        width: `${(settings.heatmapCellSize || 7)}px`, 
-                        height: `${(settings.heatmapCellSize || 7)}px`, 
+                    <div style={{
+                        width: `${(settings.heatmapCellSize || 7)}px`,
+                        height: `${(settings.heatmapCellSize || 7)}px`,
                         borderRadius: `${settings.heatmapCellRadius || 2}px`,
-                        backgroundColor: isDarkMode ? '#333333' : '#e0d2b3',
+                        backgroundColor: 'var(--heatmap-empty-color, var(--background-modifier-border))',
                     }} />
                     {getColors().map((color, index) => (
                         <div 

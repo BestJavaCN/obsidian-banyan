@@ -24,7 +24,7 @@
 }
 
 .react-calendar-heatmap .color-scale-0 {
-    fill: var(--background-primary-alt);
+    fill: var(--heatmap-empty-color, var(--background-modifier-border));
 }
 
 .react-calendar-heatmap .color-scale-1 {
