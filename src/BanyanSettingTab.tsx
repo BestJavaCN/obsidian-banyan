@@ -438,14 +438,25 @@ export class BanyanSettingTab extends PluginSettingTab {
 					});
 			});
 
-		// 0数据单元格背景色
+		// 亮色模式0数据单元格背景色
 		new Setting(containerEl)
-			.setName('0数据单元格背景色')
-			.setDesc('设置热力图中无数据单元格的背景颜色，支持十六进制颜色值（如 #333333）。留空则使用主题自动颜色')
+			.setName('亮色模式0数据单元格背景色')
+			.setDesc('设置热力图亮色模式下无数据单元格的背景颜色，支持十六进制颜色值（如 #e0d2b3）。留空则使用主题自动颜色')
 			.addText(text => {
-				text.setValue(settings.heatmapEmptyColor || "")
+				text.setValue(settings.heatmapLightEmptyColor || "")
 					.onChange(async (value) => {
-						useCombineStore.getState().updateHeatmapEmptyColor(value);
+						useCombineStore.getState().updateHeatmapLightEmptyColor(value);
+					});
+			});
+
+		// 暗色模式0数据单元格背景色
+		new Setting(containerEl)
+			.setName('暗色模式0数据单元格背景色')
+			.setDesc('设置热力图暗色模式下无数据单元格的背景颜色，支持十六进制颜色值（如 #333333）。留空则使用主题自动颜色')
+			.addText(text => {
+				text.setValue(settings.heatmapDarkEmptyColor || "")
+					.onChange(async (value) => {
+						useCombineStore.getState().updateHeatmapDarkEmptyColor(value);
 					});
 			});
 	}

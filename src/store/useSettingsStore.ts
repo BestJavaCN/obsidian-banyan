@@ -43,7 +43,8 @@ export interface SettingsState {
 	updateHeatmapColorScheme: (scheme: string) => void;
 	updateHeatmapLightColorScheme: (scheme: string) => void;
 	updateHeatmapDarkColorScheme: (scheme: string) => void;
-	updateHeatmapEmptyColor: (color: string) => void;
+	updateHeatmapLightEmptyColor: (color: string) => void;
+	updateHeatmapDarkEmptyColor: (color: string) => void;
 
     // UI state updates
     updateFilterSchemesExpanded: (expanded: boolean) => void;
@@ -169,8 +170,11 @@ export const useSettingsStore: StateCreator<CombineState, [], [], SettingsState>
     updateHeatmapDarkColorScheme: (scheme: string) => {
         get().updateSettings({ heatmapDarkColorScheme: scheme });
     },
-    updateHeatmapEmptyColor: (color: string) => {
-        get().updateSettings({ heatmapEmptyColor: color });
+    updateHeatmapLightEmptyColor: (color: string) => {
+        get().updateSettings({ heatmapLightEmptyColor: color });
+    },
+    updateHeatmapDarkEmptyColor: (color: string) => {
+        get().updateSettings({ heatmapDarkEmptyColor: color });
     },
 
     // UI state updates

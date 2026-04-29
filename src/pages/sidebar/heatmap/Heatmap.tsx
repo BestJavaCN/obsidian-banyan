@@ -191,9 +191,12 @@ export const Heatmap = ({ onCickDate }: {
                 padding: 0;
             }
 
-            /* 无数据单元格颜色 - 使用自定义颜色或主题变量 */
+            /* 无数据单元格颜色 - 根据主题模式使用自定义颜色或主题变量 */
             .react-calendar-heatmap .color-scale-0 {
-                fill: ${settings.heatmapEmptyColor && isValidColor(settings.heatmapEmptyColor) ? settings.heatmapEmptyColor : 'var(--background-modifier-border)'};
+                fill: ${isDarkMode
+                    ? (settings.heatmapDarkEmptyColor && isValidColor(settings.heatmapDarkEmptyColor) ? settings.heatmapDarkEmptyColor : 'var(--background-modifier-border)')
+                    : (settings.heatmapLightEmptyColor && isValidColor(settings.heatmapLightEmptyColor) ? settings.heatmapLightEmptyColor : 'var(--background-modifier-border)')
+                };
             }
 
             /* 月份标签样式 */
@@ -240,7 +243,8 @@ export const Heatmap = ({ onCickDate }: {
         settings.heatmapColorScheme,
         settings.heatmapLightColorScheme,
         settings.heatmapDarkColorScheme,
-        settings.heatmapEmptyColor,
+        settings.heatmapLightEmptyColor,
+        settings.heatmapDarkEmptyColor,
         isDarkMode
     ]);
     // 自定义转换函数，用于控制色块的大小和样式
@@ -341,7 +345,9 @@ export const Heatmap = ({ onCickDate }: {
                         width: `${(settings.heatmapCellSize || 7)}px`,
                         height: `${(settings.heatmapCellSize || 7)}px`,
                         borderRadius: `${settings.heatmapCellRadius || 2}px`,
-                        backgroundColor: settings.heatmapEmptyColor && isValidColor(settings.heatmapEmptyColor) ? settings.heatmapEmptyColor : 'var(--background-modifier-border)',
+                        backgroundColor: isDarkMode
+                            ? (settings.heatmapDarkEmptyColor && isValidColor(settings.heatmapDarkEmptyColor) ? settings.heatmapDarkEmptyColor : 'var(--background-modifier-border)')
+                            : (settings.heatmapLightEmptyColor && isValidColor(settings.heatmapLightEmptyColor) ? settings.heatmapLightEmptyColor : 'var(--background-modifier-border)'),
                     }} />
                     {getColors().map((color, index) => (
                         <div 
