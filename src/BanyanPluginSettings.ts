@@ -37,6 +37,8 @@ export interface BanyanPluginSettings {
 	heatmapShowOutOfRangeDays?: boolean; // 是否显示超出范围的日期
 	heatmapLightEmptyColor?: string; // 亮色模式0数据单元格的自定义背景色
 	heatmapDarkEmptyColor?: string; // 暗色模式0数据单元格的自定义背景色
+	heatmapLightCustomColors?: string; // 亮色模式自定义配色，4个颜色用逗号分隔
+	heatmapDarkCustomColors?: string; // 暗色模式自定义配色，4个颜色用逗号分隔
 
 }
 

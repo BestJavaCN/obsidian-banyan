@@ -46,6 +46,7 @@ export class BanyanSettingTab extends PluginSettingTab {
 		// 热力图设置
 		new Setting(containerEl).setName(i18n.t('setting_header_heatmap')).setHeading();
 		this.setupHeatmapColorSchemeSetting(containerEl);
+		this.setupHeatmapCustomColorSettings(containerEl);
 		this.setupHeatmapCalculationStandardSetting(containerEl);
 		this.setupHeatmapStepSettings(containerEl);
 		this.setupHeatmapWeeksSetting(containerEl);
@@ -315,6 +316,30 @@ export class BanyanSettingTab extends PluginSettingTab {
 					.setValue(settings.heatmapDarkColorScheme ?? settings.heatmapColorScheme ?? 'github')
 					.onChange(async (value) => {
 						useCombineStore.getState().updateHeatmapDarkColorScheme(value);
+					});
+			});
+	}
+
+	setupHeatmapCustomColorSettings(containerEl: HTMLElement) {
+		const settings = useCombineStore.getState().settings;
+		
+		new Setting(containerEl)
+			.setName('热力图亮色模式自定义配色')
+			.setDesc('自定义亮色模式下热力图4级颜色，用逗号分隔，留空则使用配色方案的颜色 (例如: #d8b0b3, #c78089, #ac4c61, #830738)')
+			.addText(text => {
+				text.setValue(settings.heatmapLightCustomColors ?? '')
+					.onChange(async (value) => {
+						useCombineStore.getState().updateHeatmapLightCustomColors(value);
+					});
+			});
+		
+		new Setting(containerEl)
+			.setName('热力图暗色模式自定义配色')
+			.setDesc('自定义暗色模式下热力图4级颜色，用逗号分隔，留空则使用配色方案的颜色 (例如: #830738, #ac4c61, #c78089, #d8b0b3)')
+			.addText(text => {
+				text.setValue(settings.heatmapDarkCustomColors ?? '')
+					.onChange(async (value) => {
+						useCombineStore.getState().updateHeatmapDarkCustomColors(value);
 					});
 			});
 	}

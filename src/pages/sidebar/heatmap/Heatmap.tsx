@@ -68,6 +68,16 @@ export const Heatmap = ({ onCickDate }: {
         }
     };
 
+    // 解析自定义颜色字符串
+    const parseCustomColors = (colorString: string | undefined): string[] | null => {
+        if (!colorString || colorString.trim() === '') return null;
+        const colors = colorString.split(',').map(c => c.trim()).filter(c => c.length > 0);
+        if (colors.length === 4) {
+            return colors;
+        }
+        return null;
+    };
+
     // 检测当前主题模式
     useEffect(() => {
         const checkDarkMode = () => {
@@ -87,12 +97,19 @@ export const Heatmap = ({ onCickDate }: {
 
     // 根据配色方案和主题模式获取颜色
     const getColors = () => {
+        const customColors = isDarkMode
+            ? parseCustomColors(settings.heatmapDarkCustomColors)
+            : parseCustomColors(settings.heatmapLightCustomColors);
+        
+        if (customColors) {
+            return isDarkMode ? [...customColors].reverse() : customColors;
+        }
+        
         const schemeName = isDarkMode 
             ? (settings.heatmapDarkColorScheme || settings.heatmapColorScheme || 'github')
             : (settings.heatmapLightColorScheme || settings.heatmapColorScheme || 'github');
         const scheme = colorSchemes[schemeName as keyof typeof colorSchemes] || colorSchemes.github;
         
-        // 深色模式下反转颜色顺序
         return isDarkMode ? [...scheme.colors].reverse() : scheme.colors;
     };
 
@@ -243,6 +260,8 @@ export const Heatmap = ({ onCickDate }: {
         settings.heatmapColorScheme,
         settings.heatmapLightColorScheme,
         settings.heatmapDarkColorScheme,
+        settings.heatmapLightCustomColors,
+        settings.heatmapDarkCustomColors,
         settings.heatmapLightEmptyColor,
         settings.heatmapDarkEmptyColor,
         isDarkMode
