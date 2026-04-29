@@ -191,9 +191,9 @@ export const Heatmap = ({ onCickDate }: {
                 padding: 0;
             }
 
-            /* 无数据单元格颜色 - 使用主题变量确保可见性 */
+            /* 无数据单元格颜色 - 使用自定义颜色或主题变量 */
             .react-calendar-heatmap .color-scale-0 {
-                fill: var(--heatmap-empty-color, var(--background-modifier-border));
+                fill: ${settings.heatmapEmptyColor && isValidColor(settings.heatmapEmptyColor) ? settings.heatmapEmptyColor : 'var(--background-modifier-border)'};
             }
 
             /* 月份标签样式 */
@@ -240,6 +240,7 @@ export const Heatmap = ({ onCickDate }: {
         settings.heatmapColorScheme,
         settings.heatmapLightColorScheme,
         settings.heatmapDarkColorScheme,
+        settings.heatmapEmptyColor,
         isDarkMode
     ]);
     // 自定义转换函数，用于控制色块的大小和样式
@@ -340,7 +341,7 @@ export const Heatmap = ({ onCickDate }: {
                         width: `${(settings.heatmapCellSize || 7)}px`,
                         height: `${(settings.heatmapCellSize || 7)}px`,
                         borderRadius: `${settings.heatmapCellRadius || 2}px`,
-                        backgroundColor: 'var(--heatmap-empty-color, var(--background-modifier-border))',
+                        backgroundColor: settings.heatmapEmptyColor && isValidColor(settings.heatmapEmptyColor) ? settings.heatmapEmptyColor : 'var(--background-modifier-border)',
                     }} />
                     {getColors().map((color, index) => (
                         <div 
@@ -364,6 +365,14 @@ const shiftDate = (date: Date, numDays: number) => {
     const newDate = new Date(date);
     newDate.setDate(newDate.getDate() + numDays);
     return newDate;
+}
+
+const isValidColor = (color: string): boolean => {
+    if (!color) return false;
+    const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
+    const rgbRegex = /^rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)$/;
+    const rgbaRegex = /^rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*[\d.]+\s*\)$/;
+    return hexRegex.test(color) || rgbRegex.test(color) || rgbaRegex.test(color);
 }
 
 export const getHeatmapValues = async (fileInfos: FileInfo[], sortType: SortType, plugin: any, standard: 'fileCount' | 'charCount' = 'charCount') => {

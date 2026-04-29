@@ -437,6 +437,16 @@ export class BanyanSettingTab extends PluginSettingTab {
 						useCombineStore.getState().updateHeatmapShowOutOfRangeDays(value);
 					});
 			});
-	}
 
+		// 0数据单元格背景色
+		new Setting(containerEl)
+			.setName('0数据单元格背景色')
+			.setDesc('设置热力图中无数据单元格的背景颜色，支持十六进制颜色值（如 #333333）。留空则使用主题自动颜色')
+			.addText(text => {
+				text.setValue(settings.heatmapEmptyColor || "")
+					.onChange(async (value) => {
+						useCombineStore.getState().updateHeatmapEmptyColor(value);
+					});
+			});
+	}
 }

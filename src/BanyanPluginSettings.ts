@@ -35,6 +35,7 @@ export interface BanyanPluginSettings {
 	heatmapCellSize?: number;
 	heatmapCellGutter?: number;
 	heatmapShowOutOfRangeDays?: boolean; // 是否显示超出范围的日期
+	heatmapEmptyColor?: string; // 0数据单元格的自定义背景色
 
 }
 
